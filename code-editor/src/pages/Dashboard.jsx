@@ -71,6 +71,10 @@ const Dashboard = () => {
         fetchStatus();
     }, []);
 
+    const handleOpenProject = (projectId) => {
+    navigate(`/editor/${projectId}`);
+  };
+
     const handleOpenProjectModal = () => {
         alert("프로젝트 생성 모달을 여는 기능은 아직 구현되지 않았습니다.");
     };
