@@ -114,7 +114,7 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
     // 내용이 없을 때만 초기화 (이미 작성된 코드 덮어쓰지 않도록)
     if (!file.content || file.content.trim() === "") {
       setValue(defaultSnippet);
-      onChangeContent(defaultSnippet); // ✅ 최초 1회만 초기화
+      onChangeContent(defaultSnippet); // 최초 1회만 초기화
     } else {
       setValue(file.content);
     }
