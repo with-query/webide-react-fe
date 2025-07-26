@@ -1,4 +1,4 @@
-import {
+/*import {
   Box,
   Button,
   Menu,
@@ -44,4 +44,45 @@ const LanguageSelector = ({ language, onSelect }) => {
     </Box>
   );
 };
+export default LanguageSelector;*/
+
+import {
+  Box,
+  Button,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+} from "@chakra-ui/react";
+import { LANGUAGE_VERSIONS } from "../constants";
+
+const languages = Object.entries(LANGUAGE_VERSIONS);
+const ACTIVE_COLOR = "blue.400";
+
+const LanguageSelector = ({ language, onSelect }) => {
+  return (
+    <Box ml={2} mb={4}>
+      <Text mb={2} fontSize="lg">
+        Language:
+      </Text>
+      <Menu isLazy>
+        <MenuButton as={Button}>{language}</MenuButton>
+        <MenuList bg="#110c1b">
+          {languages.map(([lang, version]) => (
+            <MenuItem
+              key={lang}
+              onClick={() => onSelect(lang)}
+              bg={language === lang ? ACTIVE_COLOR : "inherit"}
+              color={language === lang ? "white" : "gray.300"}
+            >
+              {lang} ({version})
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
+    </Box>
+  );
+};
+
 export default LanguageSelector;
