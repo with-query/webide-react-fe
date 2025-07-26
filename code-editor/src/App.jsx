@@ -1,113 +1,4 @@
-/*import { Box } from "@chakra-ui/react";
-import CodeEditor from "./components/CodeEditor";
-
-function App() {
-  return (
-    <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
-      <CodeEditor />
-    </Box>
-  );
-}
-
-export default App;*/
 /*
-import { useState } from "react";
-import { Box, HStack } from "@chakra-ui/react";
-import CodeEditor from "./components/CodeEditor";
-import FileSidebar from "./components/FileSidebar";
-import { CODE_SNIPPETS } from "./constants";
-
-function App() {
-  
-  const [activeFile, setActiveFile] = useState("main.js");
-
-  const [files, setFiles] = useState({
-  "main.js": {
-    isFolder: false,
-    language: "javascript",
-    content: CODE_SNIPPETS["javascript"],
-  },
-});
-
-const handleAddFile = (filename, isFolder = false) => {
-  if (files[filename]) return; // 중복 방지
-
-  const ext = filename.split(".").pop();
-  const lang =
-    ext === "ts"
-      ? "typescript"
-      : ext === "py"
-      ? "python"
-      : ext === "java"
-      ? "java"
-      : ext === "cs"
-      ? "csharp"
-      : ext === "php"
-      ? "php"
-      : "javascript";
-
-  setFiles((prev) => ({
-    ...prev,
-    [filename]: {
-      isFolder,
-      language: isFolder ? null : lang,
-      content: isFolder ? "" : CODE_SNIPPETS[lang],
-    },
-  }));
-
-  if (!isFolder) setActiveFile(filename);
-};
-  const updateFileContent = (filename, content) => {
-    setFiles((prev) => ({
-      ...prev,
-      [filename]: { ...prev[filename], content },
-    }));
-  };
-
-  const updateFileLanguage = (filename, language) => {
-  setFiles((prev) => ({
-    ...prev,
-    [filename]: {
-      ...prev[filename],
-      language,
-      content: CODE_SNIPPETS[language], // ✅ 무조건 해당 언어 기본값으로 덮어씀
-    },
-  }));
-};
-
-
-  const resetFileContent = (filename) => {
-    setFiles((prev) => ({
-      ...prev,
-      [filename]: {
-        ...prev[filename],
-        content: CODE_SNIPPETS[prev[filename].language],
-      },
-    }));
-  };
-
-  return (
-    <HStack align="start" spacing={0} minH="100vh" bg="#0f0a19">
-      <FileSidebar
-        files={files}
-        activeFile={activeFile}
-        onAddFile={handleAddFile}
-        onSelectFile={setActiveFile}
-      />
-      <CodeEditor
-        file={files[activeFile]}
-        filename={activeFile}
-        onChange={(value) => updateFileContent(activeFile, value)}
-        onLanguageChange={(lang) => updateFileLanguage(activeFile, lang)}
-        onReset={() => resetFileContent(activeFile)}
-      />
-    </HStack>
-  );
-}
-
-export default App;
-
-*/
 import { ChakraProvider, Flex } from "@chakra-ui/react";
 import { useState } from "react";
 import FolderSidebar from "./components/FolderSidebar";
@@ -190,6 +81,64 @@ function App() {
           }}
         />
       </Flex>
+    </ChakraProvider>
+  );
+}
+
+export default App;
+*/
+
+/*
+import { ChakraProvider } from "@chakra-ui/react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Editor from "./pages/Editor";
+import Header from "./components/layout/Header";
+
+function App() {
+  return (
+    <ChakraProvider>
+      <Header />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/editor/:projectId" element={<Editor />} />
+        </Routes>
+      </Router>
+    </ChakraProvider>
+  );
+}
+
+export default App;
+*/
+// src/App.jsx
+import { ChakraProvider } from "@chakra-ui/react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
+
+import Header from "./components/layout/Header";
+//import QueryBuilder from "./pages/QueryBuilder";
+//import Settings from "./pages/Settings";
+import Dashboard from "./pages/Dashboard";
+import Editor from "./pages/Editor";
+//import Chat from "./pages/Chat";
+
+function App() {
+  return (
+    <ChakraProvider>
+      <Router>
+        <Header />
+        <Routes>
+         {/* <Route path="/query-builder" element={<QueryBuilder />} />*/}
+         {/* <Route path="/settings" element={<Settings />} />*/}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/ide" element={<Editor />} />
+         {/* <Route path="/chat" element={<Chat />} />*/}
+        </Routes>
+      </Router>
     </ChakraProvider>
   );
 }
