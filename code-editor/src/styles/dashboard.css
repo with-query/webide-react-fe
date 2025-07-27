@@ -5,13 +5,6 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-[class$="-icon"] {
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
-  color: #d57239;
-}
-
 .dashboard-title {
   font-size: 26px;
   font-weight: 1000;
@@ -41,6 +34,7 @@
 .folder-icon {
   width: 20px;
   height: 20px;
+  color: #d57239;
 }
 
 .recent-projects-empty {
@@ -79,7 +73,7 @@
 }
 
 .create-project-btn:hover {
-  background-color: #bd5f2d;
+  background-color: #d57239;
 }
 
 .recent-projects-list {
@@ -120,7 +114,7 @@
   margin-bottom: 12px;
   width: 60px;
   height: 60px;
-  border: 1.5px solid #bd5f2d;
+  border: 1.5px solid #d57239;
   border-radius: 50%;
 }
 
@@ -134,7 +128,8 @@
 
 .user-profile-icon {
   width: 40px;
-  height: 100%
+  height: 100%;
+  color: #d57239;
 }
 
 .user-name {
@@ -171,7 +166,7 @@
   background-color: #d57239;
   color: white;
   border: none;
-  padding: 6px 18px;
+  padding: 10px 18px;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -180,7 +175,7 @@
   background-color: white;
   color: #d57239;
   border: 1px solid #d57239;
-  padding: 6px 18px;
+  padding: 10px 18px;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -204,13 +199,16 @@
 .quick-actions-icon {
   width: 21px;
   height: 21px;
+  color: #d57239;
 }
 
 .quick-action-icon {
-  color: #bd5f2d;
+  color: #d57239;
 }
 
 .plus {
+  margin-left: 3px;
+  margin-right: 3px;
   width: 20px;
   height: 20px;
 }
@@ -223,8 +221,8 @@
 .chat {
   width: 21px;
   height: 21px;
+  margin-right: 3px;
 }
-
 
 .quick-action-item {
   display: flex;
@@ -244,8 +242,8 @@
 
 .quick-action-title {
   flex: 1;
-  margin-left: 12px;
-  font-weight: 500;
+  margin-left: 10px;
+  font-weight: 400;
 }
 
 .status {
@@ -266,7 +264,7 @@
 .status-icon {
   width: 21px;
   height: 21px;
-  color: #bd5f2d;
+  color: #d57239;;
 }
 
 .project-selector {
@@ -339,7 +337,7 @@
   width: 21px;
   height: 21px;
   margin-right: 12px;
-  color: #bd5f2d;
+  color: #d57239;;
 }
 
  .table {
@@ -354,26 +352,20 @@
 
 .status-item-value {
   font-weight: bold;
-  color: #d57239;
+  color: #d57239;;
 }
 
   
 
-@media (max-width: 1024px) {
+@media (max-width: 1060px) {
   .dashboard-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 왼쪽:오른쪽 비율 조정 */
+    grid-template-columns: 3fr 1fr;
     gap: 16px;
   }
 
-  .dashboard-right {
-    font-size: 0.875rem; /* 글자 작게 */
-  }
-
-  .dashboard-right .quick-action-btn {
-    font-size: 0.875rem;
-    padding: 6px 8px;
-    gap: 6px;
+  .recent-projects-empty-wrapper, .dashboard-right {
+    font-size: 0.780rem; 
   }
 
   .user-name,
