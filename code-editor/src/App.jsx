@@ -125,22 +125,24 @@ import Header from "./components/layout/Header";
 import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
 //import Chat from "./pages/Chat";
+import MyPage from "./pages/MyPage";
+import Workspace from "./pages/Workspace/Workspace";
+
+
 
 function App() {
   return (
-    <ChakraProvider>
-      <Router>
-        <Header />
-        <Routes>
-         {/* <Route path="/query-builder" element={<QueryBuilder />} />*/}
-         {/* <Route path="/settings" element={<Settings />} />*/}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/ide" element={<Editor />} />
-         {/* <Route path="/chat" element={<Chat />} />*/}
-        </Routes>
-      </Router>
-    </ChakraProvider>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/ide" element={<Editor />} />
+        <Route path="/mypage" element={<MyPage />} />
+         <Route path="/query-builder" element={<Workspace />} />
+      </Routes>
+    </Router>
   );
 }
+
 
 export default App;
