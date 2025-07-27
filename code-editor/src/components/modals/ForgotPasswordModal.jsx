@@ -34,7 +34,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onOpenLogin }) => {
             비밀번호 재설정 링크 받기
           </Button>
 
-          <Text mt={4} fontSize="sm" textAlign="center" cursor="pointer" onClick={() => {
+          <Text mt={4} color="orange.400" fontSize="sm" textAlign="center" cursor="pointer" onClick={() => {
             onClose();
             onOpenLogin();
           }}>

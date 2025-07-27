@@ -126,6 +126,7 @@ import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
 //import Chat from "./pages/Chat";
 import MyPage from "./pages/MyPage";
+import Workspace from "./pages/Workspace/Workspace";
 
 
 
@@ -137,6 +138,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ide" element={<Editor />} />
         <Route path="/mypage" element={<MyPage />} />
+         <Route path="/query-builder" element={<Workspace />} />
       </Routes>
     </Router>
   );
