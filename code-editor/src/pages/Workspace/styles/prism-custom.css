@@ -1,0 +1,23 @@
+/* prism-custom.css */
+
+.token.keyword {
+  color: #d57239; 
+  font-weight: bold;
+}
+
+.token.string {
+  color: #16a34a; /* 초록색 (tailwind green-600) */
+}
+
+.token.number {
+  color: #2563eb; /* 파란색 (tailwind blue-600) */
+}
+
+.token.function {
+  color: #db2777; /* 핑크 (tailwind pink-600) */
+}
+
+.token.comment {
+  color: #9ca3af; /* 회색 (tailwind gray-400) */
+  font-style: italic;
+}
