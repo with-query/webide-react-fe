@@ -35,11 +35,13 @@ const Output = ({ editorRef, language }) => {
         Output
       </Text>
       <Button
-        variant="outline"
-        colorScheme="green"
+        //variant="outline"
+        color="white"
         mb={4}
         isLoading={isLoading}
         onClick={runCode}
+        bg="green.400"
+        _hover={{ bg: "green.500" }}
       >
         Run Code
       </Button>

@@ -118,18 +118,18 @@ const handleMove = (sourceId, targetId) => setTree((prev) => moveNode(sourceId, 
 
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend} color="text.primary">
     <Box
       w="280px"
-      bg="gray.800"
-      color="gray.200"
+      bg="brand.100"
+      color="text.primary"
       p={4}
       height="100vh"
       overflowY="auto"
       borderRight="1px solid"
-      borderColor="gray.700"
+      borderColor="ornage.200"
     >
-      <VStack align="start" spacing={1}>
+      <VStack align="start" spacing={1}  >
         {tree.map((node) => (
           <FileNode
             key={node.id}
