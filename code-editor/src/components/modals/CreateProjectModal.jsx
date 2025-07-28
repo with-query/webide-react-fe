@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "/src/styles/createProjectModal.css";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
+import CheckIcon from "../icons/CheckIcon";
+import FalseIcon from "../icons/FalseIcon";
+import LoadingIcon from "../icons/LoadingIcon";
 
 const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
   const { t } = useTranslation();
@@ -18,11 +21,80 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     schema: "",
     searchPath: ""
   });
+  const fieldLabels = {
+    dbName: t("DB name"),
+    host: t("Host"),
+    port: t("Port"),
+    user: t("User ID"),
+    password: t("Password")
+  };
+
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
 
   if (!isOpen) return null;
 
+  const handlePrevious = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
   const handleNext = () => {
+    //프로젝트 입력 조건
+    if (step === 1) {
+      setStep(2);
+      return;
+    }
+
+    if (step === 2) {
+      if (!projectName.trim()) {
+        alert(t("Please enter the project name."));
+        return;
+      }
+      setStep((prev) => prev + 1);
+      return;
+    }
+
     if (step === 3) {
+      const requiredFields = ["dbName", "host", "port", "user", "password"];
+      for (const field of requiredFields) {
+        if (!dbConfig[field].trim()) {
+          alert(t('Please enter the "{{field}}" field.', { field: fieldLabels[field] }));
+          return;
+        }
+      }
+
+      if (dbType === "postgres") {
+        if (!dbConfig.schema.trim()) {
+          alert(t('Please enter the "schema" field.'));
+          return;
+        }
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmail = invitedEmails
+        .split(",")
+        .map(email => email.trim())  
+        .find(email => !emailRegex.test(email));
+      if (invalidEmail) {
+        alert(t(`"${invalidEmail}" is not a valid email format.`));
+        return;
+      }
+
+      setTestResult(null);
+      setIsTesting(false);
+      setStep(4);
+      return;
+    }
+
+    if (step === 4) {
+      if (testResult !== "success") {
+        alert(t("You need to successfully test the DB connection first."));
+        return;
+      }
+    
+      //프로젝트 생성
       onNext({ 
         projectName, 
         isNewDb, 
@@ -37,10 +109,36 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
       return;
     }
     setStep((prev) => prev + 1);
-  };
+  }
 
   const handleInputChange = (key, value) => {
     setDbConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleTestConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+
+    try {
+      const response = await fetch("/api/db-connections/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dbType,
+          ...dbConfig,
+        }),
+      });
+
+      if (!response.ok) throw new Error("연결 테스트 실패");
+
+      setTestResult("success");
+    } catch (error) {
+      setTestResult("fail");
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   return (
@@ -100,17 +198,17 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
               <>
                 <label>
                   {t("schema")}
-                  <input type="text" value={dbConfig.schema} onChange={(e) => handleInputChange("schema", e.target.value)} />
+                  <input type="text" value={dbConfig.schema} onChange={(e) => handleInputChange("schema", e.target.value)} placeholder={t("schema Ex")} />
                 </label>
                 <label>
-                  search_path
-                  <input type="text" value={dbConfig.searchPath} onChange={(e) => handleInputChange("searchPath", e.target.value)} />
+                  search_path ({t("option")})
+                  <input type="text" value={dbConfig.searchPath} onChange={(e) => handleInputChange("searchPath", e.target.value)} placeholder={t("searchPath Ex")} />
                 </label>
               </>
             )}
 
             <label>
-              {t("Invite Friends")}
+              {t("Invite Friends")} ({t("option")})
               <input
                 type="text"
                 value={invitedEmails}
@@ -121,8 +219,84 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
           </>
         )}
 
+        {step === 4 && (
+          <div className="step4">
+            <div className="db-test-section">
+              <h3 className="db-test-title">
+                {t("Check Database Connection")}
+              </h3>
+
+              <div className="db-config-summary">
+                <h4 className="summary-title">{t("Summary Title")}</h4>
+                <div className="summary-content">
+                  <p><strong>{t("DB Type")}:</strong> {dbType === 'mysql' ? 'MySQL' : 'PostgreSQL'}</p>
+                  <p><strong>{t("Host Info")}:</strong> {dbConfig.host}:{dbConfig.port}</p>
+                  <p><strong>{t("DB Name")}:</strong> {dbConfig.dbName}</p>
+                  <p><strong>{t("User")}:</strong> {dbConfig.user}</p>
+                  {dbType === 'postgres' && (
+                    <>
+                      <p><strong>{t(schema)}:</strong> {dbConfig.schema}</p>
+                      <p><strong>{t(searchPath)}:</strong> {dbConfig.searchPath}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="test-button-section">
+                <button 
+                  onClick={handleTestConnection} 
+                  disabled={isTesting} 
+                  className={`test-connection-btn ${isTesting ? 'testing' : ''}`}
+                >
+                  {isTesting ? t("Testing connection...") : t("DB connection test")}
+                </button>
+              </div>
+
+              {testResult === "success" && (
+                <div className="test-result success">
+                  <div className="result-icon"> 
+                    <CheckIcon />
+                  </div>
+                  <div className="result-title">{t("Connection Success!")}</div>
+                  <p className="result-message">
+                  {t("Connection Success Message")}
+                  </p>
+                </div>
+              )}
+
+              {testResult === "fail" && (
+                <div className="test-result fail">
+                  <div className="result-icon">
+                    <FalseIcon />
+                  </div>
+                  <div className="result-title">{t("Connection Failed")}</div>
+                  <p className="result-message">
+                    {t("Connection Failed Message1")}<br />{t("Connection Failed Message2")}
+                  </p>
+                </div>
+              )}
+
+              {isTesting && (
+                <div className="test-result loading">
+                  <div className="result-icon">
+                    <LoadingIcon />
+                  </div>
+                  <div className="result-title">{t("Connecting...")}</div>
+                  <p className="result-message">
+                    {t("Connecting Message1")}<br />{t("Connecting Message2")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}  
+
         <div className="modal-buttons">
           <button className="cancel-btn" onClick={onClose}>{t("Cancel")}</button>
+          
+          {step !== 1 && (
+            <button className="previous-btn" onClick={handlePrevious}> {t("Previous")} </button>
+          )}
           <button className="next-btn"onClick={handleNext}>{t("Next")}</button>
         </div>
       </div>

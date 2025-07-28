@@ -21,6 +21,7 @@ import CodeIcon from "../components/icons/CodeIcon";
 import UserProfileIcon from "../components/icons/UserProfileIcon";
 import FolderIcon from "../components/icons/FolderIcon";
 import InboxIcon from "../components/icons/InboxIcon";
+import MoreIcon from "../components/icons/MoreIcon";
 
 import CreateProjectModal from "../components/modals/CreateProjectModal";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const navigate = useNavigate();
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -41,6 +43,26 @@ const Dashboard = () => {
     const [tableItemCount, setTableItemCount] = useState(0);
 
     const { t } = useTranslation();
+
+    //프로젝트 리스트 더보기
+    const [activeDropdownId, setActiveDropdownId] = useState(null);
+
+    const toggleDropdown = (projectId) => {
+        setActiveDropdownId(prev => prev === projectId ? null : projectId);
+    };
+
+    const handleEdit = (projectId) => {
+        console.log("Edit project", projectId);
+    };
+
+    const handleDelete = (projectId) => {
+        console.log("Delete project", projectId);
+    };
+
+    const handleInvite = (projectId) => {
+        console.log("Invite members to project", projectId);
+    };
+            
     //프로젝트 목록 조회
     useEffect(() => {
         // axios.get("/api/projects")
@@ -111,6 +133,16 @@ const Dashboard = () => {
         fetchProjectStatus();
     }, [selectedProjectId, projects]);
 
+    //비로그인 사용자 프로젝트 생성 버튼 사용시, 로그인 안내
+    const handleOpenCreateModal = () => {
+        if (!user) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        setIsCreateModalOpen(true);
+    };
+
+
     //프로젝트 열기
     const handleOpenProject = (projectId) => {
     navigate(`/editor/${projectId}`);
@@ -122,6 +154,13 @@ const Dashboard = () => {
         setIsDropdownOpen(false);
     };
 
+    //마이페이지 이동
+    const handleUserProfileClick = () => {
+        if (user) {
+            navigate("/mypage");
+        }
+    };
+
     return (
         <Box p={8} bg="#f9f8f6" minH="100vh" color="text.primary">
             <h1 className="dashboard-title">{t("Dashboard")}</h1>
@@ -131,18 +170,17 @@ const Dashboard = () => {
                 <Grid templateColumns="3fr 1fr" gap={6}>
                     <Box className="dashboard-left">
 
-                        <div className="recent-projects">
-                            <div className="recent-projects-header">
-                                <div className="recent-projects-header-left">
+                        <div className="projects">
+                            <div className="projects-header">
+                                <div className="projects-header-left">
                                     <FolderIcon className="folder-icon" />
-                                    <span>{t("Recent project")}</span>
+                                    <span>{t("All projects")}</span>
                                 </div>
-                                <button className="recent-projects-view-all">{t("View all")}</button>
                             </div>
 
                             {projects.length === 0 ? (
-                                <div className="recent-projects-empty-wrapper">
-                                    <div className="recent-projects-empty">
+                                <div className="projects-empty-wrapper">
+                                    <div className="-projects-empty">
                                         <InboxIcon className="empty-icon" />
                                         <p className="empty-text">{t("No projects have been created yet")}</p>
                                         <button className="create-project-btn" onClick={() => setIsCreateModalOpen(true)}>
@@ -151,10 +189,23 @@ const Dashboard = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <ul className="recent-projects-list">
+                                <ul className="projects-list">
                                     {projects.map((project) => (
                                         <li key={project.id} className="project-card">
                                             {project.name}
+                                            <button
+                                                className="more-icon-button"
+                                                onClick={() => toggleDropdown(project.id)}
+                                            >
+                                                <MoreIcon className="more-icon"/>
+                                            </button>    
+                                            {activeDropdownId === project.id && (
+                                                <ul className="project-dropdown">
+                                                    <li onClick={() => handleEdit(project.id)}>프로젝트 수정</li>
+                                                    <li onClick={() => handleDelete(project.id)}>프로젝트 삭제</li>
+                                                    <li onClick={() => handleInvite(project.id)}>멤버 초대</li>
+                                                </ul>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -166,7 +217,12 @@ const Dashboard = () => {
                         <div className="user-card">
                             {user ? (
                                 <>
-                                    <div className="user-profile-container">
+                                    <div 
+                                        className="user-profile-container clickable" 
+                                        onClick={handleUserProfileClick}
+                                        role="button"
+                                        tabIndex={0}
+                                    >
                                         {user?.profileUrl?.trim() ? (
                                             <img className="user-profile" src={user.profileUrl} alt="프로필" />
                                         ) : (
@@ -196,7 +252,7 @@ const Dashboard = () => {
                                 <BoltIcon className="quick-actions-icon" />
                                 {t("Fast action")}
                             </h2>
-                            <div className="quick-action-item" onClick={() =>setIsCreateModalOpen(true)} role="button" tabIndex={0}>
+                            <div className="quick-action-item" onClick={handleOpenCreateModal} role="button" tabIndex={0}>
                                 <PlusIcon className="quick-action-icon plus"  />
                                 <p className="quick-action-title">{t("New query project")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
