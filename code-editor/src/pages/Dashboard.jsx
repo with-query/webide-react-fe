@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Box, Grid } from "@chakra-ui/react";
+
 import mockProjects from "../mock/mockProjects";
 import mockUser from "../mock/mockUser";
 import mockDbConnections from "../mock/mockDbConnections";
 import mockDbSchemas from "../mock/mockDbSchemas";
 //import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { Box, Grid } from "@chakra-ui/react";
+
 import "../styles/dashboard.css";
 
 import BoltIcon from "../components/icons/BoltIcon"
@@ -20,19 +22,23 @@ import UserProfileIcon from "../components/icons/UserProfileIcon";
 import FolderIcon from "../components/icons/FolderIcon";
 import InboxIcon from "../components/icons/InboxIcon";
 
+import CreateProjectModal from "../components/modals/CreateProjectModal";
+
 const Dashboard = () => {    
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
-
     const [user, setUser] = useState(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedProjectId, setSelectedProjectId] = useState(null);
+
     const [projectCount, setProjectCount] = useState(0);
     const [queryCount, setQueryCount] = useState(0);
     const [tableItemCount, setTableItemCount] = useState(0);
 
+    //프로젝트 목록 조회
     useEffect(() => {
         // axios.get("/api/projects")
         // .then((res) => {
@@ -48,6 +54,7 @@ const Dashboard = () => {
         setLoading(false);
     }, []);
 
+    //유저 정보 조회
     useEffect(() => {
         // axios.get("/api/user/me")
         //     .then((res) => {
@@ -59,6 +66,7 @@ const Dashboard = () => {
         setUser(mockUser);
     }, []);
 
+    //프로젝트 상태 수 계산(쿼리/테이블 수)
     useEffect(() => {
         const fetchProjectStatus = () => {
             let filteredProjects = projects;
@@ -100,18 +108,12 @@ const Dashboard = () => {
         fetchProjectStatus();
     }, [selectedProjectId, projects]);
 
+    //프로젝트 열기
     const handleOpenProject = (projectId) => {
     navigate(`/editor/${projectId}`);
-  };
-
-    const handleOpenProjectModal = () => {
-        alert("프로젝트 생성 모달을 여는 기능은 아직 구현되지 않았습니다.");
     };
 
-    const setIsChatModalOpen = (value) => {
-        alert("팀 채팅 기능은 아직 구현되지 않았습니다.");
-    };
-
+    //프로젝트 선택 변경
     const handleSelectProject = (id) => {
         setSelectedProjectId(id);
         setIsDropdownOpen(false);
@@ -140,7 +142,9 @@ const Dashboard = () => {
                                     <div className="recent-projects-empty">
                                         <InboxIcon className="empty-icon" />
                                         <p className="empty-text">아직 생성된 프로젝트가 없습니다</p>
-                                        <button className="create-project-btn">프로젝트 생성</button>
+                                        <button className="create-project-btn" onClick={() => setIsCreateModalOpen(true)}>
+                                            프로젝트 생성
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
@@ -189,7 +193,7 @@ const Dashboard = () => {
                                 <BoltIcon className="quick-actions-icon" />
                                 빠른 액션
                             </h2>
-                            <div className="quick-action-item" onClick={handleOpenProjectModal} role="button" tabIndex={0}>
+                            <div className="quick-action-item" onClick={() =>setIsCreateModalOpen(true)} role="button" tabIndex={0}>
                                 <PlusIcon className="quick-action-icon plus"  />
                                 <p className="quick-action-title">새 쿼리 프로젝트</p>
                                 <p className="quick-action-arrow">&gt;</p>
@@ -254,6 +258,31 @@ const Dashboard = () => {
                     </Box>
                 </Grid>
             )}
+                <CreateProjectModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onNext={(data) => {
+                        console.log("프로젝트 설정 완료", data);
+
+                        // ✅ 새 프로젝트 정보 생성 (간단한 id 생성 포함)
+                        const newProject = {
+                        id: Date.now(), // 간단한 고유 id (실제론 uuid 권장)
+                        name: data.projectName,
+                        createdAt: new Date().toISOString(),
+                        files: [], // 쿼리 파일은 아직 없으므로 빈 배열
+                        };
+
+                        // ✅ 기존 프로젝트 리스트에 추가
+                        setProjects(prev => [newProject, ...prev]);
+
+                        if (data.isNewDb) {
+                            console.log("🆕 새 프로젝트입니다. 빈 디렉토리 상태입니다.");
+                        } else {
+                            console.log("📦 기존 DB 연결입니다. DB를 불러왔습니다.", data.dbConfig);
+                        }
+                        navigate("/query-builder");
+                    }}
+                />
         </Box>
     );
 };
