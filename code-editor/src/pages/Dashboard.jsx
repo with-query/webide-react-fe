@@ -23,6 +23,8 @@ import FolderIcon from "../components/icons/FolderIcon";
 import InboxIcon from "../components/icons/InboxIcon";
 
 import CreateProjectModal from "../components/modals/CreateProjectModal";
+import { useTranslation } from "react-i18next";
+
 
 const Dashboard = () => {    
     const [projects, setProjects] = useState([]);
@@ -38,6 +40,7 @@ const Dashboard = () => {
     const [queryCount, setQueryCount] = useState(0);
     const [tableItemCount, setTableItemCount] = useState(0);
 
+    const { t } = useTranslation();
     //프로젝트 목록 조회
     useEffect(() => {
         // axios.get("/api/projects")
@@ -120,8 +123,8 @@ const Dashboard = () => {
     };
 
     return (
-        <Box p={8} bg="#f9f8f6" minH="100vh">
-            <h1 className="dashboard-title">대시보드</h1>
+        <Box p={8} bg="#f9f8f6" minH="100vh" color="text.primary">
+            <h1 className="dashboard-title">{t("Dashboard")}</h1>
             {loading ? (
                 <div className="loading-indicator">Loading...</div>
                 ) : (
@@ -132,18 +135,18 @@ const Dashboard = () => {
                             <div className="recent-projects-header">
                                 <div className="recent-projects-header-left">
                                     <FolderIcon className="folder-icon" />
-                                    <span>최근 프로젝트</span>
+                                    <span>{t("Recent project")}</span>
                                 </div>
-                                <button className="recent-projects-view-all">모두 보기</button>
+                                <button className="recent-projects-view-all">{t("View all")}</button>
                             </div>
 
                             {projects.length === 0 ? (
                                 <div className="recent-projects-empty-wrapper">
                                     <div className="recent-projects-empty">
                                         <InboxIcon className="empty-icon" />
-                                        <p className="empty-text">아직 생성된 프로젝트가 없습니다</p>
+                                        <p className="empty-text">{t("No projects have been created yet")}</p>
                                         <button className="create-project-btn" onClick={() => setIsCreateModalOpen(true)}>
-                                            프로젝트 생성
+                                            {t("Create project")}
                                         </button>
                                     </div>
                                 </div>
@@ -178,11 +181,11 @@ const Dashboard = () => {
                                     <div className="user-profile-container">
                                         <UserProfileIcon className="user-profile-icon" />
                                     </div>
-                                    <p className="login-title"> 로그인이 필요합니다. </p>
-                                    <p className="login-desc"> 계정에 로그인하여 기능을 이용해보세요 </p>
+                                    <p className="login-title"> {t("Login required")} </p>
+                                    <p className="login-desc"> {t("Log in to your account to use the features")} </p>
                                     <div className="user-profile-buttons">
-                                        <button className="sign-in-btn">로그인</button>
-                                        <button className="sign-up-btn">회원가입</button>
+                                        <button className="sign-in-btn">{t("Login")}</button>
+                                        <button className="sign-up-btn">{t("Sign Up")}</button>
                                     </div>
                                 </>
                             )}
@@ -191,21 +194,21 @@ const Dashboard = () => {
                         <div className="quick-actions">
                             <h2 className="quick-actions-header">
                                 <BoltIcon className="quick-actions-icon" />
-                                빠른 액션
+                                {t("Fast action")}
                             </h2>
                             <div className="quick-action-item" onClick={() =>setIsCreateModalOpen(true)} role="button" tabIndex={0}>
                                 <PlusIcon className="quick-action-icon plus"  />
-                                <p className="quick-action-title">새 쿼리 프로젝트</p>
+                                <p className="quick-action-title">{t("New query project")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
                             </div>
                             <div className="quick-action-item" onClick={() => user && navigate("/workspace")} role="button" tabIndex={0}>
                                 <RecentIcon className="quick-action-icon recent-project" />
-                                <p className="quick-action-title">최근 프로젝트 열기</p>
+                                <p className="quick-action-title">{t("Recent project")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
                             </div>
                             <div className="quick-action-item" onClick={() => user && setIsChatModalOpen(true)} role="button" tabIndex={0}>
                                 <ChatIcon className="quick-action-icon chat" />
-                                <p className="quick-action-title">팀 채팅</p>
+                                <p className="quick-action-title">{t("Team chat")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
                             </div>
                         </div>
@@ -213,7 +216,7 @@ const Dashboard = () => {
                         <div className="status">
                             <h2>
                                 <PieIcon className="status-icon" />
-                                사용 현황
+                                {t("Usage status")}
                             </h2>
                             <div 
                                 className="status-dropdown"
@@ -223,12 +226,12 @@ const Dashboard = () => {
                                 <button className="status-dropdown-toggle">
                                     {selectedProjectId 
                                         ? projects.find(p => p.id === selectedProjectId)?.name 
-                                        : "전체 프로젝트"}
+                                        : t("All projects")}
                                 </button>
 
                                 {isDropdownOpen && (
                                     <ul className="status-dropdown-menu">
-                                        <li onClick={() => handleSelectProject(null)}>전체 프로젝트</li>
+                                        <li onClick={() => handleSelectProject(null)}>{t("All projects")}</li>
                                         {projects.map(p => (
                                             <li key={p.id} onClick={() => handleSelectProject(p.id)}>{p.name}</li>
                                         ))}
@@ -238,19 +241,19 @@ const Dashboard = () => {
                             <div className="staus-list">
                                 <div className="status-item">
                                     <FileIcon className="status-item-icon file" />
-                                    <p className="status-item-title">총 프로젝트 수</p>
+                                    <p className="status-item-title">{t("Total number of projects")}</p>
                                     <p className="status-item-value">{projectCount}</p>
                                 </div>
 
                                 <div className="status-item">
                                     <CodeIcon className="status-item-icon code" />
-                                    <p className="status-item-title">총 쿼리 수</p>
+                                    <p className="status-item-title">{t("Total number of querys")}</p>
                                     <p className="status-item-value">{queryCount}</p>
                                 </div>
 
                                 <div className="status-item">
                                     <TableIcon className="status-item-icon table" />
-                                    <p className="status-item-title">테이블 항목</p>
+                                    <p className="status-item-title">{t("Table entity")}</p>
                                     <p className="status-item-value">{tableItemCount}</p>
                                 </div>
                             </div>
