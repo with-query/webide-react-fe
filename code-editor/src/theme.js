@@ -33,7 +33,7 @@ const theme = extendTheme({
             },
             _focus: {
               borderColor: "brand.500",
-              boxShadow: "0 0 0 1px #d57239", // 포인트색 outline
+              boxShadow: "0 0 0 1px #d57239", 
             },
             color: "text.primary", 
             _placeholder: {        

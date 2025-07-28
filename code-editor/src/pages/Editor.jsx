@@ -61,7 +61,7 @@ function Editor() {
   };
 
   return (
-    <Flex height="100vh" bg="#1a202c" color="white" overflow="hidden">
+    <Flex height="90vh" overflow="hidden" bg="brand.100" >
       <FolderSidebar
         tree={tree}
         setTree={setTree}
