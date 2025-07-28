@@ -43,7 +43,12 @@ const resources = {
         "Data" : "데이터",
         "Chart" : "차트",
         "Run" : "실행",
-        "Share" : "공유"
+        "Share" : "공유",
+
+        "Change Password": "비밀번호 변경",
+        "Current Password": "현재 비밀번호",
+        "New Password": "새 비밀번호",
+        "Confirm New Password": "새 비밀번호 확인"
 
 
         },
@@ -90,7 +95,12 @@ const resources = {
         "Data" : "Data",
         "Chart" : "Chart",
         "Run" : "Run",
-        "Share" : "Share"
+        "Share" : "Share",
+
+        "Change Password": "Change Password",
+        "Current Password": "Current Password",
+        "New Password": "New Password",
+        "Confirm New Password": "Confirm New Password"
 
         },
     },
