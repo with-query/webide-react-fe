@@ -1,7 +1,9 @@
 import { useState } from "react";
 import "/src/styles/createProjectModal.css";
+import { useTranslation } from "react-i18next";
 
 const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [isNewDb, setIsNewDb] = useState(true);
   const [projectName, setProjectName] = useState("");
@@ -44,60 +46,60 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h2>프로젝트 생성</h2>
+        <h2>{t("Create project")}</h2>
 
         {step === 1 && (
           <div className="step1">
             <label>
-              <input type="radio" name="mode" checked={isNewDb} onChange={() => setIsNewDb(true)} /> 새 데이터베이스 연결
+              <input type="radio" name="mode" checked={isNewDb} onChange={() => setIsNewDb(true)} /> {t("New DB connection")}
             </label>
             <label>
-              <input type="radio" name="mode" checked={!isNewDb} onChange={() => setIsNewDb(false)} /> 기존 데이터베이스 연결
+              <input type="radio" name="mode" checked={!isNewDb} onChange={() => setIsNewDb(false)} /> {t("Existing DB connection")}
             </label>
           </div>
         )}
 
         {step === 2 && (
           <label>
-            프로젝트 이름
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="프로젝트 이름"/>
+            {t("project name")}
+            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("project name")}/>
           </label>
         )}
 
         {step === 3 && (
           <>
             <label>
-              데이터베이스 이름
-              <input type="text" value={dbConfig.dbName} onChange={(e) => handleInputChange("dbName", e.target.value)} placeholder="데이터베이스 이름" />
+              {t("DB name")}
+              <input type="text" value={dbConfig.dbName} onChange={(e) => handleInputChange("dbName", e.target.value)} placeholder={t("DB name")} />
             </label>
             <label>
-              데이터베이스 종류
+              {t("DB Types")}
               <select value={dbType} onChange={(e) => setDbType(e.target.value)}>
                 <option value="mysql">MySQL</option>
                 <option value="postgres">PostgreSQL</option>
               </select>
             </label>
             <label>
-              호스트
-              <input type="text" value={dbConfig.host} onChange={(e) => handleInputChange("host", e.target.value)} placeholder="호스트  (ex. localhost)"/>
+              {t("Host")}
+              <input type="text" value={dbConfig.host} onChange={(e) => handleInputChange("host", e.target.value)} placeholder={t("Host Ex")}/>
             </label>
             <label>
-              포트
-              <input type="text" value={dbConfig.port} onChange={(e) => handleInputChange("port", e.target.value)} placeholder="포트  (ex. 3306 / 5432)" />
+              {t("Port")}
+              <input type="text" value={dbConfig.port} onChange={(e) => handleInputChange("port", e.target.value)} placeholder={t("Port Ex")} />
             </label>
             <label>
-              사용자 ID
-              <input type="text" value={dbConfig.user} onChange={(e) => handleInputChange("user", e.target.value)} placeholder="사용자 ID  (ex. root)" />
+              {t("User ID")}
+              <input type="text" value={dbConfig.user} onChange={(e) => handleInputChange("user", e.target.value)} placeholder={t("User ID Ex")} />
             </label>
             <label>
-              비밀번호
-              <input type="password" value={dbConfig.password} onChange={(e) => handleInputChange("password", e.target.value)} placeholder="비밀번호  (ex. root)" />
+              {t("Password")}
+              <input type="password" value={dbConfig.password} onChange={(e) => handleInputChange("password", e.target.value)} placeholder={t("Password Ex")} />
             </label>
 
             {dbType === "postgres" && (
               <>
                 <label>
-                  스키마
+                  {t("schema")}
                   <input type="text" value={dbConfig.schema} onChange={(e) => handleInputChange("schema", e.target.value)} />
                 </label>
                 <label>
@@ -108,20 +110,20 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
             )}
 
             <label>
-              친구 초대 (이메일, 쉼표로 구분)
+              {t("Invite Friends")}
               <input
                 type="text"
                 value={invitedEmails}
                 onChange={(e) => setInvitedEmails(e.target.value)}
-                placeholder="이메일  (ex. friend1@example.com, friend2@example.com)"
+                placeholder={t("Invite Friends Ex")}
               />
             </label>
           </>
         )}
 
         <div className="modal-buttons">
-          <button className="cancel-btn" onClick={onClose}>취소</button>
-          <button className="next-btn"onClick={handleNext}>다음</button>
+          <button className="cancel-btn" onClick={onClose}>{t("Cancel")}</button>
+          <button className="next-btn"onClick={handleNext}>{t("Next")}</button>
         </div>
       </div>
     </div>
