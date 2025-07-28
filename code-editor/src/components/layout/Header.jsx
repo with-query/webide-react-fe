@@ -22,6 +22,7 @@ import SignupModal from "../modals/SignUpModal";
 import ForgotPasswordModal from "../modals/ForgotPasswordModal";
 
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
     const location = useLocation();
@@ -31,6 +32,15 @@ const Header = () => {
     const forgotModal = useDisclosure();
     
     const navigate = useNavigate();
+
+    const { t, i18n } = useTranslation();
+    const [lang, setLang] = useState(i18n.language || "kr");
+
+    const toggleLang = () => {
+        const newLang = lang === "kr" ? "en" : "kr";
+        i18n.changeLanguage(newLang);
+        setLang(newLang);
+    };
 
     // 현재 경로 기반으로 active 상태 결정
     const isActive = (path) => location.pathname.startsWith(path);
@@ -63,13 +73,13 @@ const Header = () => {
             <HStack spacing={6} ml={8}>
                 <NavLink to="/query-builder">
                     <Text
-                    fontWeight="medium"
-                    cursor="pointer"
-                    borderBottom={isActive("/query-builder") ? "2px solid orange" : "none"}
-                    color={isActive("/query-builder") ? "orange.500" : "gray.600"}
-                    pb={1}
+                        fontWeight="medium"
+                        cursor="pointer"
+                        borderBottom={isActive("/query-builder") ? "2px solid orange" : "none"}
+                        color={isActive("/query-builder") ? "orange.500" : "gray.600"}
+                        pb={1}
                     >
-                    쿼리 빌더
+                    {t("Query Builder")}
                     </Text>
                 </NavLink>
 
@@ -81,7 +91,7 @@ const Header = () => {
                         color={isActive("/settings") ? "orange.500" : "gray.600"}
                         pb={1}
                     >
-                    설정
+                    {t("Settings")}
                     </Text>
                 </NavLink>
             </HStack>
@@ -107,17 +117,18 @@ const Header = () => {
             <HStack spacing={4} ml={6}>
                 <Button size="sm" variant="outline"
                     color="gray.600"
-                    fontWeight="medium">
-                    KR
+                    fontWeight="medium"
+                    onClick={toggleLang}>
+                    {lang.toUpperCase()}
                 </Button>
                 <NavLink to="/dashboard">
                     <Text
-                    cursor="pointer"
-                    color={isActive("/dashboard") ? "orange.500" : "gray.600"}
-                    borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
-                    fontWeight="medium"
+                        cursor="pointer"
+                        color={isActive("/dashboard") ? "orange.500" : "gray.600"}
+                        borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
+                        fontWeight="medium"
                     >
-                    대시보드
+                    {t("Dashboard")}
                     </Text>
                 </NavLink>
 
@@ -128,7 +139,7 @@ const Header = () => {
                     borderBottom={isActive("/ide") ? "2px solid orange" : "none"}
                     fontWeight="medium"
                     >
-                    IDE
+                    {t("IDE")}
                     </Text>
                 </NavLink>
 
@@ -139,7 +150,7 @@ const Header = () => {
                         borderBottom={isActive("/chat") ? "2px solid orange" : "none"}
                         fontWeight="medium"
                     >
-                    채팅
+                    {t("Chat")}
                     </Text>
                 </NavLink>
             </HStack>
@@ -157,14 +168,14 @@ const Header = () => {
                     <MenuList bg="brand.100" color="text.primary">
                         {isLoggedIn ? (
                             <>
-                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={() => navigate("/mypage")}>마이페이지</MenuItem>
+                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={() => navigate("/mypage")}>{t("My Page")}</MenuItem>
 
-                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={handleLogout}>로그아웃</MenuItem>
+                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={handleLogout}>{t("Logout")}</MenuItem>
                             </>
                         ) : (
                             <>
-                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={loginModal.onOpen}>로그인</MenuItem>
-                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={signupModal.onOpen}>회원가입</MenuItem>
+                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={loginModal.onOpen}>{t("Login")}</MenuItem>
+                            <MenuItem bg="brand.100"  _hover={{ bg: "brand.300" }} onClick={signupModal.onOpen}>{t("Sign Up")}</MenuItem>
                             </>
                         )}
                     </MenuList>

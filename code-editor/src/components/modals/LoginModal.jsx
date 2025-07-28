@@ -13,42 +13,50 @@ import {
   Text,
   Flex,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 
 const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSuccess }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>로그인</ModalHeader>
+        <ModalHeader>{t("Login")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl mb={3}>
-            <FormLabel>이메일 또는 아이디</FormLabel>
-            <Input placeholder="이메일 또는 아이디" />
+            <FormLabel>{t("Email or Username")}</FormLabel>
+            <Input placeholder={t("Email or Username")} />
           </FormControl>
           <FormControl mb={3}>
-            <FormLabel>비밀번호</FormLabel>
-            <Input type="password" placeholder="비밀번호" />
+            <FormLabel>{t("Password")}</FormLabel>
+            <Input type="password" placeholder={t("Password")} />
           </FormControl>
           <Flex justify="space-between" mb={4}>
-            <Checkbox>아이디 저장</Checkbox>
-            <Text color="orange.400" fontSize="sm" cursor="pointer" onClick={() => {
-              onClose();
-              onOpenForgot();
-            }}>
-              비밀번호를 잊으셨나요?
+            <Checkbox>{t("Remember Me")}</Checkbox>
+            <Text
+              color="orange.400"
+              fontSize="sm"
+              cursor="pointer"
+              onClick={() => {
+                onClose();
+                onOpenForgot();
+              }}
+            >
+              {t("Forgot Password?")}
             </Text>
           </Flex>
           <Button colorScheme="orange" w="100%" onClick={onLoginSuccess}>
-            로그인
+            {t("Login")}
           </Button>
           <Text mt={4} fontSize="sm" textAlign="center">
-            계정이 없으신가요?{" "}
+            {t("No account?")}{" "}
             <Text as="span" color="orange.400" cursor="pointer" onClick={() => {
               onClose();
               onOpenSignup();
             }}>
-              회원가입하기
+              {t("Sign Up Now")}
             </Text>
           </Text>
         </ModalBody>
