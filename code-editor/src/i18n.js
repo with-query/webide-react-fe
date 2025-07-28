@@ -108,7 +108,18 @@ const resources = {
         "Please enter the project name.": "프로젝트 이름을 입력해주세요.",
         "Please enter the \"{{field}}\" field.": "\"{{field}}\" 항목을 입력해주세요.",
         "\"{{email}}\" is not a valid email format.": "\"{{email}}\"은(는) 유효한 이메일 형식이 아닙니다.",
-        "You need to successfully test the DB connection first.": "먼저 DB 연결 테스트를 성공해야 합니다."   
+        "You need to successfully test the DB connection first.": "먼저 DB 연결 테스트를 성공해야 합니다.", 
+        
+        "Edit Project" : "프로젝트 수정",
+        "project name" : "프로젝트명",
+        "Save" : "저장",
+        "Please enter an email address." : "이메일 주소를 입력하세요.",
+        "Invite Members" : "팀원 초대하기",
+        "Currently invited members" : "현재 초대된 팀원들",
+        "Invite" : "초대하기 (이메일, 쉼표로 구분)",
+        "Send" : "전송",
+
+        "confirm_delete_project_message": "<0>{{projectName}}</0> 프로젝트를<1/>정말 삭제하시겠습니까?"
         },
     },
     en: {
@@ -215,9 +226,18 @@ const resources = {
 
         "Please enter the project name.": "Please enter the project name.",
         "Please enter the \"{{field}}\" field.": "Please enter the \"{{field}}\" field.",
-        "You need to successfully test the DB connection first.": "You need to successfully test the DB connection first."
+        "You need to successfully test the DB connection first.": "You need to successfully test the DB connection first.",
 
+        "Edit Project" : "Edit Project",
+        "project name" : "Project Name",
+        "Save" : "Save",
+        "Please enter an email address." : "Please enter an email address.",
+        "Invite Members" : "Invite Members",
+        "Currently invited members" : "Currently invited members",
+        "Invite" : "Invite (Emails, separated by commas)",
+        "Send" : "Send",
 
+        "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?"
         },
     },
 };

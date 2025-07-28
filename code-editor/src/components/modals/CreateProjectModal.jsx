@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "/src/styles/createProjectModal.css";
+import "@/styles/createProjectModal.css";
 import { useTranslation } from 'react-i18next';
 import CheckIcon from "../icons/CheckIcon";
 import FalseIcon from "../icons/FalseIcon";
@@ -119,26 +119,26 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     setIsTesting(true);
     setTestResult(null);
 
-    try {
-      const response = await fetch("/api/db-connections/test", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dbType,
-          ...dbConfig,
-        }),
-      });
+    setTimeout(() => {
+        console.log("백엔드 API 없음 - 연결 테스트를 성공으로 간주합니다.");
+        setTestResult("success");
+        setIsTesting(false);
+    }, 1000);
+    // try {
+    //   const response = await fetch("/api/db-connections/test", {
+    //     method: "POST",
+    //     headers: {"Content-Type": "application/json"},
+    //     body: JSON.stringify({dbType, ...dbConfig}),
+    //   });
 
-      if (!response.ok) throw new Error("연결 테스트 실패");
+    //   if (!response.ok) throw new Error("연결 테스트 실패");
 
-      setTestResult("success");
-    } catch (error) {
-      setTestResult("fail");
-    } finally {
-      setIsTesting(false);
-    }
+    //   setTestResult("success");
+    // } catch (error) {
+    //   setTestResult("fail");
+    // } finally {
+    //   setIsTesting(false);
+    // }
   };
 
   return (
@@ -235,8 +235,8 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
                   <p><strong>{t("User")}:</strong> {dbConfig.user}</p>
                   {dbType === 'postgres' && (
                     <>
-                      <p><strong>{t(schema)}:</strong> {dbConfig.schema}</p>
-                      <p><strong>{t(searchPath)}:</strong> {dbConfig.searchPath}</p>
+                      <p><strong>{t("schema")}:</strong> {dbConfig.schema}</p>
+                      <p><strong>{t("searchPath")}:</strong> {dbConfig.searchPath}</p>
                     </>
                   )}
                 </div>
@@ -291,7 +291,7 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
           </div>
         )}  
 
-        <div className="modal-buttons">
+        <div className="modal-buttons multi-step">
           <button className="cancel-btn" onClick={onClose}>{t("Cancel")}</button>
           
           {step !== 1 && (
