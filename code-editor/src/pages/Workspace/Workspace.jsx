@@ -2,8 +2,11 @@ import { Box, Flex, Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/r
 import FileTree from "./components/FileTree";
 import QueryBuilder from "./components/QueryBuilder";
 import CodeEditor from "./components/CodeEditor";
+import { useTranslation } from "react-i18next";
+
 
 const Workspace = () => {
+    const { t } = useTranslation();
   return (
     <Flex direction="column" height="100%">
       {/* 상단 3분할 영역 */}
@@ -28,18 +31,22 @@ const Workspace = () => {
       <Box borderTop="1px solid #E2E8F0" height="250px" bg="white">
         <Tabs size="sm" colorScheme="orange">
           <TabList px={4} pt={2}>
-            <Tab>데이터</Tab>
-            <Tab>차트</Tab>
+            <Tab 
+                _selected={{ color: "orange.500", fontWeight: "bold" }}
+                color="gray.500">{t("Data")}</Tab>
+            <Tab 
+                _selected={{ color: "orange.500", fontWeight: "bold" }}
+                color="gray.500">{t("Chart")}</Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel>
               {/* 데이터 결과 영역 */}
-              <Box>결과 테이블 들어갈 자리</Box>
+              <Box color="gray.600">결과 테이블 들어갈 자리</Box>
             </TabPanel>
             <TabPanel>
               {/* 차트 영역 */}
-              <Box>차트 컴포넌트 자리</Box>
+              <Box color="gray.600">차트 컴포넌트 자리</Box>
             </TabPanel>
           </TabPanels>
         </Tabs>

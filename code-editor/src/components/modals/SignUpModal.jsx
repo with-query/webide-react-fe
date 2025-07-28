@@ -1,4 +1,4 @@
-// components/modals/SignupModal.jsx
+
 import {
   Modal,
   ModalOverlay,
@@ -12,46 +12,50 @@ import {
   Button,
   Text,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
+
 
 const SignupModal = ({ isOpen, onClose, onOpenLogin }) => {
+const { t } = useTranslation();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>회원가입</ModalHeader>
+        <ModalHeader>{t("Sign Up")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl mb={3}>
-            <FormLabel>이메일</FormLabel>
-            <Input placeholder="이메일" />
+            <FormLabel>{t("Email")}</FormLabel>
+            <Input placeholder={t("Email")} />
           </FormControl>
 
           <FormControl mb={3}>
-            <FormLabel>이름</FormLabel>
-            <Input placeholder="이름" />
+            <FormLabel>{t("Name")}</FormLabel>
+            <Input placeholder={t("Name")} />
           </FormControl>
 
           <FormControl mb={3}>
-            <FormLabel>비밀번호</FormLabel>
-            <Input type="password" placeholder="비밀번호" />
+            <FormLabel>{t("Password")}</FormLabel>
+            <Input type="password" placeholder={t("Password")}/>
           </FormControl>
 
           <FormControl mb={3}>
-            <FormLabel>비밀번호 확인</FormLabel>
-            <Input type="password" placeholder="비밀번호 확인" />
+            <FormLabel>{t("Password Confirm")}</FormLabel>
+            <Input type="password" placeholder={t("Confirm Password")}rkdl />
           </FormControl>
 
           <Button colorScheme="brown" w="100%" mt={2}>
-            가입하기
+            {t("Register")}
           </Button>
 
           <Text mt={4} fontSize="sm" textAlign="center">
-            이미 계정이 있으신가요?{" "}
+            {t("Already have an account?")}{" "}
             <Text as="span" color="orange.400" cursor="pointer" onClick={() => {
               onClose();
               onOpenLogin();
             }}>
-              로그인
+              {t("Login")}
             </Text>
           </Text>
         </ModalBody>

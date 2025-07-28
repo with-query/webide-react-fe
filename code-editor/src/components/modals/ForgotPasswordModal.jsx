@@ -1,4 +1,5 @@
-// components/modals/ForgotPasswordModal.jsx
+import { useTranslation } from "react-i18next";
+
 import {
   Modal,
   ModalOverlay,
@@ -14,35 +15,37 @@ import {
 } from "@chakra-ui/react";
 
 const ForgotPasswordModal = ({ isOpen, onClose, onOpenLogin }) => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>비밀번호 찾기</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-          <Text fontSize="sm" mb={4}>
-            가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.
-          </Text>
+const { t } = useTranslation();
 
-          <FormControl mb={4}>
-            <FormLabel>이메일</FormLabel>
-            <Input type="email" placeholder="이메일" />
-          </FormControl>
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>{t("Find Password")}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+            <Text fontSize="sm" mb={4}>
+                {t("Enter your email and we'll send a reset link.")}
+            </Text>
 
-          <Button colorScheme="brown" w="100%">
-            비밀번호 재설정 링크 받기
-          </Button>
+            <FormControl mb={4}>
+                <FormLabel>{t("Email")}</FormLabel>
+                <Input type="email" placeholder={t("Email")} />
+            </FormControl>
 
-          <Text mt={4} color="orange.400" fontSize="sm" textAlign="center" cursor="pointer" onClick={() => {
-            onClose();
-            onOpenLogin();
-          }}>
-            로그인으로 돌아가기
-          </Text>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+            <Button colorScheme="brown" w="100%">
+                {t("Send Reset Link")}
+            </Button>
+
+            <Text mt={4} color="orange.400" fontSize="sm" textAlign="center" cursor="pointer" onClick={() => {
+                onClose();
+                onOpenLogin();
+            }}>
+                {t("Back to Login")}
+            </Text>
+            </ModalBody>
+        </ModalContent>
+        </Modal>
   );
 };
 

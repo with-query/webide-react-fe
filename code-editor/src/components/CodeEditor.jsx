@@ -101,10 +101,13 @@ import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
 import Output from "./Output";
 import { CODE_SNIPPETS } from "../constants";
+import { useTranslation } from "react-i18next";
+
 
 const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
   const editorRef = useRef();
   const [value, setValue] = useState("");
+  const { t } = useTranslation();
 
   // 파일이 바뀌면 해당 언어의 기본 스니펫으로 초기화
   useEffect(() => {
@@ -145,7 +148,7 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
   if (!file) {
     return (
       <Box w="100%" p={10} textAlign="center" fontSize="xl">
-        파일을 선택하세요.
+        {t("Select a file")}
       </Box>
     );
   }
