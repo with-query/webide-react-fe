@@ -11,20 +11,20 @@
   margin-bottom: 20px;
 }
 
-.recent-projects {
+.projects {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.recent-projects-header {
+.projects-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.recent-projects-header-left {
+.projects-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -37,7 +37,7 @@
   color: #d57239;
 }
 
-.recent-projects-empty {
+.projects-empty {
   display:flex;
   flex-direction: column;
   justify-content: center;
@@ -47,11 +47,13 @@
   color: #888;
 }
 
-.recent-projects-empty-wrapper {
+.projects-empty-wrapper {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 300px;
 }
 
 .empty-icon {
@@ -76,13 +78,17 @@
   background-color: #d57239;
 }
 
-.recent-projects-list {
+.projects-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
 .project-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
   padding: 12px 16px;
   border: 1px solid #eee;
   border-radius: 8px;
@@ -94,11 +100,53 @@
   background-color: #f4f1ed;
 }
 
+.more-icon {
+  height: 20px;
+  width: 20px;
+  color: #d57239;
+}
+
+.more-icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.project-dropdown {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  list-style: none;
+  padding: 8px 0;
+  width: 150px;
+  box-shadow: 0 2px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.project-dropdown li {
+  border: 1px solid white;
+  border-radius: 6px;
+  padding: 8px 16px;
+  width: 130px;
+  cursor: pointer;
+}
+
+.project-dropdown li:hover {
+  background-color: #f2f2f2;
+}
+
 .user-card {
   background-color: white;
   border-radius: 12px;
   padding: 26px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.05);
   margin-bottom: 24px;
   display: flex;
   flex-direction: column;
@@ -116,6 +164,30 @@
   height: 60px;
   border: 1.5px solid #d57239;
   border-radius: 50%;
+}
+
+.user-profile-container.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+.user-profile-container.clickable:hover {
+    transform: scale(1.05);
+}
+
+.user-profile-container.clickable:active {
+    transform: scale(0.98);
+}
+
+.user-profile, .user-profile-icon {
+    transition: all 0.2s ease-in-out;
+}
+
+.user-profile-container.clickable:hover .user-profile,
+.user-profile-container.clickable:hover .user-profile-icon {
+    filter: brightness(1.1);
 }
 
 .user-profile {
@@ -292,7 +364,6 @@
 }
 
 .status-dropdown-menu {
-  display: none;
   position: absolute;
   top: 100%;
   left: 0;
@@ -314,12 +385,12 @@
   background-color: #f2f2f2;
 }
 
-.status-dropdown:hover .status-dropdown-menu {
+/* .status-dropdown:hover .status-dropdown-menu {
   display: block;
-}
+} */
 
 /* 현황 리스트 */
-.staus-list {
+.status-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
