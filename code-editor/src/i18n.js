@@ -13,6 +13,7 @@ const resources = {
         "Logout": "로그아웃",
         "Sign Up": "회원가입",
         "My Page": "마이페이지",
+        "DBConnect" : "DB 연결 관리",
 
         "Email or Username": "이메일 또는 아이디",
         "Name": "이름",
@@ -134,6 +135,7 @@ const resources = {
         "Logout": "Logout",
         "Sign Up": "Sign Up",
         "My Page": "My Page",
+        "DBConnect" : "DBConnect",
 
         "Email or Username": "Email or Username",
         "Name": "Name",
