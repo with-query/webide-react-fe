@@ -38,6 +38,7 @@ const resources = {
         "Number" : "전화번호",
         "Nickame" : "닉네임",
         "Information" : "기본 정보",
+        "Sign Up Now" : "회원가입하기",
 
         "Select a file" : "파일을 선택하세요.",
         "Data" : "데이터",
@@ -158,6 +159,7 @@ const resources = {
         "Number" : "Number",
         "Nickame" : "Nickame",
         "Information" : "Information",
+        "Sign Up Now" : "Sign Up Now",
 
         "Select a file" : "Select a file",
 

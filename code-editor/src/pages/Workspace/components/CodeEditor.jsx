@@ -6,6 +6,8 @@ import "prismjs/components/prism-sql"; // SQL 문법 하이라이트용
 import "prismjs/themes/prism.css"; // 기본 Prism 테마 (커스터마이징 가능)
 import "../styles/prism-custom.css"
 import { useTranslation } from "react-i18next";
+import {DownloadIcon, LinkIcon } from '@chakra-ui/icons';
+
 
 
 const CodeEditor = () => {
@@ -32,13 +34,13 @@ ORDER BY`);
   return (
     <Box flex="1" p={4} bg="brand.100" borderRadius="md" boxShadow="sm">
       <Flex justify="flex-end" gap={2} mb={2}>
-        <Button colorScheme="orange" size="sm" onClick={handleRun}>
+        <Button  colorScheme="orange" size="sm" onClick={handleRun}>
           ▶ {t("Run")}
         </Button>
-        <Button colorScheme="orange" size="sm">
+        <Button leftIcon={<DownloadIcon />} colorScheme="orange" size="sm">
           {t("Save")}
         </Button>
-        <Button colorScheme="orange" size="sm">
+        <Button leftIcon={<LinkIcon />} colorScheme="orange" size="sm">
           {t("Share")}
         </Button>
       </Flex>
