@@ -12,7 +12,7 @@ import Header from "./components/layout/Header";
 //import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
-//import Chat from "./pages/Chat";
+import Chat from "./pages/Chat";
 import MyPage from "./pages/MyPage";
 import Workspace from "./pages/Workspace/Workspace";
 
@@ -26,11 +26,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ide" element={<Editor />} />
         <Route path="/mypage" element={<MyPage />} />
-         <Route path="/query-builder" element={<Workspace />} />
+        <Route path="/query-builder" element={<Workspace />} />
+        <Route path="/chat" element={<Chat />} />
       </Routes>
     </Router>
   );
 }
-
 
 export default App;
