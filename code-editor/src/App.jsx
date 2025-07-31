@@ -27,12 +27,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ide" element={<Editor />} />
         <Route path="/mypage" element={<MyPage />} />
-         <Route path="/query-builder" element={<Workspace />} />
-         <Route path="/DBConnect" element={<DBConnect />} />
+        <Route path="/query-builder" element={<Workspace />} />
+        <Route path="/DBConnect" element={<DBConnect />} />
       </Routes>
     </Router>
   );
 }
-
 
 export default App;

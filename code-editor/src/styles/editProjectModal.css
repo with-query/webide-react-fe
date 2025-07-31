@@ -4,6 +4,31 @@
   font-weight: 600;
 }
 
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role-capsule {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.role-capsule.owner {
+  color: #d57239; 
+  border: 1px solid #d57239;
+}
+
+.role-capsule.member {
+  color: #999; 
+  border: 1px solid #999;
+}
+
 .modal input {
   width: 100%;
   padding: 8px;
@@ -24,8 +49,37 @@ input::placeholder {
   color: #cac7c6;
 }
 
+.edit-project-textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #cab8ae;
+  border-radius: 4px;
+  background-color: #f9f8f6;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.edit-project-textarea:focus {
+  outline: none; 
+  border: 2px solid #cab8ae; 
+}
 .read-only-input {
   color:#cab8ae;
+  padding: 8px;
+  margin-top: 8px;
+  background-color: #f9f8f6;
+  border-radius: 4px;
+  border: 1px solid #cab8ae;
+  width: 100%;
+  min-height: 38px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .modal input[readOnly] {

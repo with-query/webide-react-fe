@@ -1,0 +1,14 @@
+.resize-handle {
+  width: 2px;
+  background-color: #E2E8F0;
+  cursor: col-resize;
+}
+.resize-handle-horizontal {
+  height: 2px;
+  background-color: #E2E8F0;
+  cursor: row-resize;
+}
+.resize-handle:hover, .resize-handle-horizontal:hover {
+  background-color: #d57239;
+  transition: background-color 0.2s;
+}

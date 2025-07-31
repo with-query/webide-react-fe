@@ -8,35 +8,43 @@ const EditProjectModal = ({ isOpen, onClose, project, onSave }) => {
 
   // 수정할 프로젝트 이름과 DB 정보를 위한 state
   const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+
   const [dbInfo, setDbInfo] = useState(null);
+  const isOwner = project?.role === 'OWNER';
 
   // 부모로부터 받은 project prop이 바뀔 때마다 실행
   useEffect(() => {
     if (project) {
-      // 전달받은 프로젝트 이름으로 state 설정
+      console.log("수정할 프로젝트 데이터:", project);
       setProjectName(project.name);
-      
-      // 프로젝트 ID에 맞는 DB 연결 정보를 mock 데이터에서 검색
+      setProjectDescription(project.description || "");
       const connection = mockDbConnections.find(conn => conn.projectId === project.id);
       setDbInfo(connection);
-    } else {
-      // 모달이 닫히면 모든 정보 초기화
-      setProjectName("");
-      setDbInfo(null);
-    }
-  }, [project]); // 'project' prop이 바뀔 때마다 이 effect가 실행됩니다.
+    } 
+    // else {
+    //   setProjectName("");
+    //   setProjectDescription("");
+    //   setDbInfo(null);
+    // }
+  }, [project]); 
 
   if (!isOpen) return null;
+
+  const handleReadOnlyClick = () => {
+    alert("프로젝트 소유자만 수정할 수 있습니다.");
+  };
 
   const handleSave = () => {
     if (!projectName.trim()) {
       alert(t("Please enter the project name."));
       return;
     }
-    // 부모에게 수정된 프로젝트 이름과 id를 전달
+   
     onSave({
       id: project.id,
-      name: projectName,
+      newName: projectName,
+      newDescription: projectDescription,
     });
     onClose(); // 모달 닫기
   };
@@ -44,11 +52,18 @@ const EditProjectModal = ({ isOpen, onClose, project, onSave }) => {
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h2>{t("Edit Project")}</h2>
+        <div className="modal-header">
+          <h2>{t("Edit Project")}</h2>
+          {project?.role && (
+            <div className={`role-capsule ${project.role.toLowerCase()}`}>
+              {project.role}
+            </div>
+          )}
+        </div>
 
-        {/* 프로젝트명: 수정 가능 */}
         <label>
           {t("project name")}
+          {isOwner ? (
           <input 
             className="edit-project-input"
             type="text" 
@@ -56,8 +71,29 @@ const EditProjectModal = ({ isOpen, onClose, project, onSave }) => {
             onChange={(e) => setProjectName(e.target.value)} 
             placeholder={t("project name")} 
           />
+          ) : (
+            <div className="read-only-input" onClick={handleReadOnlyClick}>
+              {projectName}
+            </div>
+          )}
         </label>
         
+        <label>
+          {t("Project Description")}
+          {isOwner ? (
+          <textarea
+            className="edit-project-textarea"
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            rows="4"
+          />
+          ) : (
+            <div className="read-only-input" onClick={handleReadOnlyClick}>
+              {projectDescription || '설명이 없습니다.'}
+            </div>
+          )}
+        </label>
+
         {/* DB 정보: 읽기 전용 (dbInfo가 있을 때만 표시) */}
         {dbInfo && (
           <>

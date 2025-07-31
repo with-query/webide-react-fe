@@ -18,6 +18,7 @@ import UserProfileIcon from "@/components/icons/UserProfileIcon";
 import FolderIcon from "@/components/icons/FolderIcon";
 import InboxIcon from "@/components/icons/InboxIcon";
 import MoreIcon from "@/components/icons/MoreIcon";
+
 import CreateProjectModal from "@/components/modals/CreateProjectModal";
 import EditProjectModal from "@/components/modals/EditProjectModal";
 import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
@@ -66,10 +67,8 @@ const Dashboard = () => {
                 // --- API 연동 부분 끝 ---
 
                 // mock 데이터로 API 호출 시뮬레이션
-                const isLoggedIn = true; // 로그인 상태 테스트용
-                const currentUser = isLoggedIn ? mockUser : null;
+                const currentUser = mockUser;
                 setUser(currentUser);
-
                 if (currentUser) {
                     const userProjects = mockProjects.filter(p => p.userId === currentUser.id);
                     setProjects(userProjects);
@@ -77,7 +76,7 @@ const Dashboard = () => {
 
             } catch (error) {
                 console.error("데이터 로딩 실패:", error);
-                setUser(null); // 에러 발생 시 로그아웃 처리
+                setUser(null);
                 setProjects([]);
             } finally {
                 setLoading(false);
@@ -142,11 +141,30 @@ const Dashboard = () => {
     }, [activeDropdownId]);
 
     // EditProjectModal에서 '저장'을 눌렀을 때 실행될 함수
-    const handleSaveProject = (updatedProject) => {
+    const handleSaveProject = (updatedData) => {
+        // 실제 API 연동 시 주석 해제하여 사용
+        // try {
+        //   await axios.put(`/api/projects/${updatedData.id}`, {
+        //     newName: updatedData.newName,
+        //     newDescription: updatedData.newDescription
+        //   });
+        // } catch (error) {
+        //   console.error("프로젝트 수정 실패:", error);
+        //   alert("프로젝트 수정에 실패했습니다.");
+        //   return; // 에러 발생 시 함수 종료
+        // }
         setProjects(prevProjects =>
-            prevProjects.map(p =>
-                p.id === updatedProject.id ? { ...p, name: updatedProject.name } : p
-            )
+            prevProjects.map(project => {
+                if (project.id === updatedData.id) {
+                    return {
+                    ...project, 
+                    name: updatedData.newName,
+                    description: updatedData.newDescription,
+                    };
+                }
+                
+                return project;
+            })
         );
         setIsEditModalOpen(false);
     };
@@ -245,7 +263,14 @@ const Dashboard = () => {
                                 <ul className="projects-list">
                                     {projects.map((project) => (
                                         <li key={project.id} className="project-card" onClick={() => handleOpenProject(project.id)}>
-                                            {project.name}
+                                        <div className="project-card-content">
+                                            <h3 className="project-card-name">{project.name}</h3>
+                                            <p className="project-card-desc">{project.description}</p>
+                                            <div className="project-card-dates">
+                                                <span>{t("created at")}: {new Date(project.createdAt).toLocaleDateString('ko-KR')}</span>
+                                                <span>{t("upadate at")}: {new Date(project.updatedAt).toLocaleDateString('ko-KR')}</span>
+                                            </div>
+                                        </div>
                                             <button
                                                 className="more-icon-button"
                                                 onClick={(e) => {
@@ -379,17 +404,38 @@ const Dashboard = () => {
                 onNext={(data) => {
                     console.log("프로젝트 설정 완료", data);
 
-                    // 새 프로젝트 정보 생성 (간단한 id 생성 포함)
-                    const newProject = {
-                        id: Date.now(), // 간단한 고유 id (실제론 uuid 권장)
-                        name: data.projectName,
-                        createdAt: new Date().toISOString(),
-                        files: [], // 쿼리 파일은 아직 없으므로 빈 배열
-                    };
+                    try { // 🎨 try 블록 시작
+                        console.log("프로젝트 생성 요청 데이터:", data);
+                        const newProject = {
+                            id: Date.now(),
+                            name: data.name,
+                            description: data.description,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            role: "OWNER",
+                            files: [],
+                        };
 
-                    // 기존 프로젝트 리스트에 추가
-                    setProjects(prev => [newProject, ...prev]);
-                    navigate("/query-builder");
+                        setProjects(prev => [newProject, ...prev]);
+
+                        if (data.dbConnected) {
+                            console.log("DB 연결을 시도합니다:", data.dbConfig);
+                            // await axios.post(`/api/db-connections`, { ... }); 
+                            console.log("DB 연결과 함께 프로젝트가 생성되었습니다. 쿼리 빌더로 이동합니다.");
+                            navigate("/Workspace");
+                        } else {
+                            console.log("DB 연결 없이 프로젝트만 생성되었습니다. 에디터로 이동합니다.");
+                            // await axios.post(`/api/projects/${newProject.id}/invitations`, { emails: data.invitedEmails });
+                            navigate(`/Editor/${newProject.id}`);
+                        } 
+                        if (data.invitedEmails && data.invitedEmails.length > 0) {
+                            console.log("멤버를 초대합니다:", data.invitedEmails);
+                            // await axios.post(`/api/projects/${newProject.id}/invitations`, { emails: data.invitedEmails });
+                        }
+                    } catch (error) {
+                        console.error("프로젝트 생성 실패:", error);
+                        alert("프로젝트 생성에 실패했습니다.");
+                    }
                 }}
             />
 
