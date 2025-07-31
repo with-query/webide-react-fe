@@ -34,7 +34,8 @@
 }
 
 .modal input,
-.modal select {
+.modal select,
+.modal textarea {
   width: 100%;
   padding: 8px;
   margin-top: 8px;
@@ -43,15 +44,18 @@
   background-color: #f9f8f6;
   font-weight: 500;
   font-size: 14px;
+  resize: none;
 }
 
 .modal input:focus,
-.modal select:focus {
+.modal select:focus,
+.modal textarea:focus {
   outline: none; 
   border: 2px solid #cab8ae; 
 }
 
-input::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: #cac7c6;
 }
 
@@ -124,6 +128,13 @@ input::placeholder {
   gap: 8px;
   font-size: 16px;
   cursor: pointer;
+}
+
+.step-description {
+ margin-bottom: 15px;
+ color: #d57239;
+ font-size: 16px;
+ font-weight: 600;
 }
 
 /* 4단계 DB 연결 테스트 스타일 */

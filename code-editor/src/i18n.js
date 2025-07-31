@@ -69,6 +69,7 @@ const resources = {
         "New DB connection" : "새 데이터베이스 연결",
         "Existing DB connection" : "기존 데이터베이스 연결",
         "project name" : "프로젝트 이름",
+        "Project Description" : "프로젝트 설명",
         "DB name" : "데이터베이스 이름",
         "DB Types" : "데이터베이스 종류",
         "Host" : "호스트",
@@ -82,8 +83,8 @@ const resources = {
         "schema Ex" : "스키마  (ex. public)",
         "searchPath Ex": "스키마 검색 경로  (ex. public, app_schema)",
         "option" : "선택",
-        "Invite Friends" : "친구 초대 (이메일, 쉼표로 구분)",
-        "Invite Friends Ex" : "이메일  (ex. friend1@example.com, friend2@example.com)",
+        "Invite Friends" : "팀원 초대 (이메일, 쉼표로 구분)",
+        "Invite Friends Ex" : "이메일  (ex. member1@example.com, member2@example.com)",
         "Cancel" : " 취소",
         "Previous": "이전",
         "Next" : "다음",
@@ -119,7 +120,8 @@ const resources = {
         "Invite" : "초대하기 (이메일, 쉼표로 구분)",
         "Send" : "전송",
 
-        "confirm_delete_project_message": "<0>{{projectName}}</0> 프로젝트를<1/>정말 삭제하시겠습니까?"
+        "confirm_delete_project_message": "<0>{{projectName}}</0> 프로젝트를<1/>정말 삭제하시겠습니까?",
+        "These steps are optional and can be configured later." : "해당 단계는 선택사항으로 추후에 설정이 가능합니다." 
         },
     },
     en: {
@@ -188,8 +190,9 @@ const resources = {
 
         "New DB connection" : "New DB connection",
         "Existing DB connection" : "Existing DB connection",
-        "project name" : "project name",
-        "DB name" : "DB name",
+        "project name" : "Project Name",
+        "Project Description" : "Project Description",
+        "DB name" : "DB Name",
         "DB Types" : "DB Types",
         "Host" : "Host",
         "Port" : "Port",
@@ -198,12 +201,12 @@ const resources = {
         "User ID" : "User ID",
         "User ID Ex" : "User ID (ex. root)",
         "Password Ex" : "Password (ex. root)",
-        "schema" : "schema",
-        "schema Ex" : "schema  (ex. public)",
+        "schema" : "Schema",
+        "schema Ex" : "Schema  (ex. public)",
         "option" : "option",
         "searchPath Ex": "Schema search path  (ex. public, app_schema)",
-        "Invite Friends" : "Invite Friends (Emails, separated by commas)",
-        "Invite Friends Ex" : "Email  (ex. friend1@example.com, friend2@example.com)",
+        "Invite Members" : "Invite Members (Emails, separated by commas)",
+        "Invite Members Ex" : "Email  (ex. member1@example.com, member2@example.com)",
         "Cancel" : "Cancel",
         "Previous": "Previous",
         "Next" : "Next",
@@ -237,7 +240,8 @@ const resources = {
         "Invite" : "Invite (Emails, separated by commas)",
         "Send" : "Send",
 
-        "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?"
+        "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?",
+        "These steps are optional and can be configured later." : "These steps are optional and can be configured later."
         },
     },
 };

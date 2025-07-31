@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "@/styles/createProjectModal.css";
 import { useTranslation } from 'react-i18next';
 import CheckIcon from "../icons/CheckIcon";
@@ -8,9 +8,10 @@ import LoadingIcon from "../icons/LoadingIcon";
 const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
-  const [isNewDb, setIsNewDb] = useState(true);
   const [projectName, setProjectName] = useState("");
-  const [invitedEmails, setInvitedEmails] = useState("")
+  const [projectDescription, setProjectDescription] = useState("");
+
+  const [invitedEmails, setInvitedEmails] = useState("");
   const [dbType, setDbType] = useState("mysql");
   const [dbConfig, setDbConfig] = useState({
     dbName: "",
@@ -21,6 +22,13 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     schema: "",
     searchPath: ""
   });
+
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+
+  const [isNewDb, setIsNewDb] = useState(true);
+  const [connectDb, setConnectDb] = useState(true); 
+  
   const fieldLabels = {
     dbName: t("DB name"),
     host: t("Host"),
@@ -29,8 +37,17 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     password: t("Password")
   };
 
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState(null);
+  useEffect(() => {
+    if (!isOpen) {
+      setStep(1);
+      setConnectDb(true);
+      setProjectName("");
+      setProjectDescription("");
+      setInvitedEmails("");
+      setDbConfig({ dbName: "", host: "", port: "", user: "", password: "", schema: "", searchPath: "" });
+      setTestResult(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -41,29 +58,27 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
   };
 
   const handleNext = () => {
-    //프로젝트 입력 조건
+
     if (step === 1) {
+      if (!projectName.trim()) {
+        alert(t("Please enter the project name."));
+        return;
+      }
       setStep(2);
       return;
     }
 
     if (step === 2) {
-      if (!projectName.trim()) {
-        alert(t("Please enter the project name."));
-        return;
-      }
-      setStep((prev) => prev + 1);
-      return;
-    }
+      const isDbConnectionAttempted = dbConfig.dbName.trim() || dbConfig.host.trim() || dbConfig.user.trim();
 
-    if (step === 3) {
-      const requiredFields = ["dbName", "host", "port", "user", "password"];
-      for (const field of requiredFields) {
-        if (!dbConfig[field].trim()) {
-          alert(t('Please enter the "{{field}}" field.', { field: fieldLabels[field] }));
-          return;
+      if (isDbConnectionAttempted) {
+        const requiredFields = ["dbName", "host", "port", "user", "password"];
+        for (const field of requiredFields) {
+          if (!dbConfig[field].trim()) {
+            alert(t('Please enter the "{{field}}" field.', { field: fieldLabels[field] }));
+            return;
+          }
         }
-      }
 
       if (dbType === "postgres") {
         if (!dbConfig.schema.trim()) {
@@ -84,11 +99,20 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
 
       setTestResult(null);
       setIsTesting(false);
-      setStep(4);
+      setStep(3);
+    } else {
+        onNext({
+          name: projectName, 
+          description: projectDescription,
+          dbConnected: false,
+          invitedEmails: invitedEmails.split(",").map(e => e.trim()).filter(Boolean)
+        });
+        onClose();
+      }
       return;
     }
 
-    if (step === 4) {
+    if (step === 3) {
       if (testResult !== "success") {
         alert(t("You need to successfully test the DB connection first."));
         return;
@@ -96,8 +120,9 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     
       //프로젝트 생성
       onNext({ 
-        projectName, 
-        isNewDb, 
+        name: projectName,
+        description: projectDescription,
+        dbConnected: true,
         dbType, 
         dbConfig, 
         invitedEmails: invitedEmails 
@@ -106,9 +131,7 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
           .filter(email => email.length > 0)
       });
       onClose();
-      return;
     }
-    setStep((prev) => prev + 1);
   }
 
   const handleInputChange = (key, value) => {
@@ -141,31 +164,40 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
     // }
   };
 
+  const getNextButtonText = () => {
+    if (step === 3 || (step === 2 && !dbConfig.host.trim() && !dbConfig.dbName.trim())) {
+      return t("Create project");
+    }
+    return t("Next");
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal">
         <h2>{t("Create project")}</h2>
 
         {step === 1 && (
-          <div className="step1">
+          <>
             <label>
-              <input type="radio" name="mode" checked={isNewDb} onChange={() => setIsNewDb(true)} /> {t("New DB connection")}
+              {t("project name")}
+              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("project name")}/>
             </label>
+            
             <label>
-              <input type="radio" name="mode" checked={!isNewDb} onChange={() => setIsNewDb(false)} /> {t("Existing DB connection")}
+              {t("Project Description")} ({t("option")})
+              <textarea
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder={t("Enter a description for your project.")}
+                rows="3"
+              />
             </label>
-          </div>
+          </>
         )}
 
         {step === 2 && (
-          <label>
-            {t("project name")}
-            <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("project name")}/>
-          </label>
-        )}
-
-        {step === 3 && (
           <>
+            <p className="step-description">{t("These steps are optional and can be configured later.")}</p>
             <label>
               {t("DB name")}
               <input type="text" value={dbConfig.dbName} onChange={(e) => handleInputChange("dbName", e.target.value)} placeholder={t("DB name")} />
@@ -208,18 +240,18 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
             )}
 
             <label>
-              {t("Invite Friends")} ({t("option")})
+              {t("Invite Members")}
               <input
                 type="text"
                 value={invitedEmails}
                 onChange={(e) => setInvitedEmails(e.target.value)}
-                placeholder={t("Invite Friends Ex")}
+                placeholder={t("Invite Members Ex")}
               />
             </label>
           </>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <div className="step4">
             <div className="db-test-section">
               <h3 className="db-test-title">
@@ -294,7 +326,7 @@ const CreateProjectModal = ({ isOpen, onClose, onNext }) => {
         <div className="modal-buttons multi-step">
           <button className="cancel-btn" onClick={onClose}>{t("Cancel")}</button>
           
-          {step !== 1 && (
+          {step > 1  && (
             <button className="previous-btn" onClick={handlePrevious}> {t("Previous")} </button>
           )}
           <button className="next-btn"onClick={handleNext}>{t("Next")}</button>

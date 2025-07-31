@@ -10,7 +10,10 @@ export const mockProjects = [
     id: 1,
     userId: "user-123", // 이 프로젝트의 소유자
     name: "SQL 시각화 프로젝트",
-    createdAt: "2025-07-25",
+    description: "2025년 3분기 매출 데이터를 분석하고 시각화합니다.",
+    createdAt: "2025-07-28T10:30:00Z",
+    updatedAt: "2025-07-29T14:45:00Z",
+    role: "OWNER",
     files: [
       { name: "user_analysis.sql" },
       { name: "sales_report.sql" },
@@ -21,7 +24,10 @@ export const mockProjects = [
     id: 2,
     userId: "user-123", // 이 프로젝트의 소유자
     name: "고객 데이터 분석",
-    createdAt: "2025-07-24",
+    description: "2025년 3분기 매출 데이터를 분석하고 시각화합니다.",
+    createdAt: "2025-07-28T10:30:00Z",
+    updatedAt: "2025-07-29T14:45:00Z",
+    role: "MEMBER",
     files: [
       { name: "segmentation_query.sql" },
       { name: "project_schema.json" },
@@ -31,7 +37,10 @@ export const mockProjects = [
     id: 3,
     userId: "user-789", // 다른 사용자의 프로젝트
     name: "경쟁사 분석 리포트",
-    createdAt: "2025-07-23",
+    description: "2025년 3분기 매출 데이터를 분석하고 시각화합니다.",
+    createdAt: "2025-07-28T10:30:00Z",
+    updatedAt: "2025-07-29T14:45:00Z",
+    role: "MEMBER",
     files: [
       { name: "competitor_A.sql" },
       { name: "competitor_B.sql" },
