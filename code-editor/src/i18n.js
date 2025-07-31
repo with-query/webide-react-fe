@@ -13,6 +13,7 @@ const resources = {
         "Logout": "로그아웃",
         "Sign Up": "회원가입",
         "My Page": "마이페이지",
+        "DBConnect" : "DB 연결 관리",
 
         "Email or Username": "이메일 또는 아이디",
         "Name": "이름",
@@ -38,6 +39,7 @@ const resources = {
         "Number" : "전화번호",
         "Nickame" : "닉네임",
         "Information" : "기본 정보",
+        "Sign Up Now" : "회원가입하기",
 
         "Select a file" : "파일을 선택하세요.",
         "Data" : "데이터",
@@ -135,6 +137,7 @@ const resources = {
         "Logout": "Logout",
         "Sign Up": "Sign Up",
         "My Page": "My Page",
+        "DBConnect" : "DBConnect",
 
         "Email or Username": "Email or Username",
         "Name": "Name",
@@ -160,6 +163,7 @@ const resources = {
         "Number" : "Number",
         "Nickame" : "Nickame",
         "Information" : "Information",
+        "Sign Up Now" : "Sign Up Now",
 
         "Select a file" : "Select a file",
 

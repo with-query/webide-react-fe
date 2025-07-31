@@ -83,52 +83,15 @@ const Header = () => {
                     </Text>
                 </NavLink>
 
-                <NavLink to="/settings">
+                <NavLink to="/DBConnect">
                     <Text
                         fontWeight="medium"
                         cursor="pointer"
-                        borderBottom={isActive("/settings") ? "2px solid orange" : "none"}
-                        color={isActive("/settings") ? "orange.500" : "gray.600"}
+                        borderBottom={isActive("/DBConnect") ? "2px solid orange" : "none"}
+                        color={isActive("/DBConnect") ? "orange.500" : "gray.600"}
                         pb={1}
                     >
-                    {t("Settings")}
-                    </Text>
-                </NavLink>
-            </HStack>
-
-            <Spacer />
-
-        {/* 실행/저장/공유 버튼 */}
-        {/*<HStack spacing={3}>
-          <Button colorScheme="orange" size="sm">
-            실행
-          </Button>
-          <Button variant="outline" size="sm"color="gray.600"
-            fontWeight="medium">
-            저장
-          </Button>
-          <Button variant="outline" size="sm"color="gray.600"
-            fontWeight="medium">
-            공유
-          </Button>
-        </HStack>*/}
-
-            {/* 네비게이션 메뉴 (대시보드, IDE, 채팅) */}
-            <HStack spacing={4} ml={6}>
-                <Button size="sm" variant="outline"
-                    color="gray.600"
-                    fontWeight="medium"
-                    onClick={toggleLang}>
-                    {lang.toUpperCase()}
-                </Button>
-                <NavLink to="/dashboard">
-                    <Text
-                        cursor="pointer"
-                        color={isActive("/dashboard") ? "orange.500" : "gray.600"}
-                        borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
-                        fontWeight="medium"
-                    >
-                    {t("Dashboard")}
+                    {t("DBConnect")}
                     </Text>
                 </NavLink>
 
@@ -142,6 +105,32 @@ const Header = () => {
                     {t("IDE")}
                     </Text>
                 </NavLink>
+
+                <NavLink to="/dashboard">
+                    <Text
+                        cursor="pointer"
+                        color={isActive("/dashboard") ? "orange.500" : "gray.600"}
+                        borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
+                        fontWeight="medium"
+                    >
+                    {t("Dashboard")}
+                    </Text>
+                </NavLink>
+            </HStack>
+
+            <Spacer />
+
+            {/* 네비게이션 메뉴 (대시보드, IDE, 채팅) */}
+            <HStack spacing={4} ml={6}>
+                <Button size="sm" variant="outline"
+                    color="gray.600"
+                    fontWeight="medium"
+                    onClick={toggleLang}>
+                    {lang.toUpperCase()}
+                </Button>
+                
+
+                
 
                 <NavLink to="/chat">
                     <Text

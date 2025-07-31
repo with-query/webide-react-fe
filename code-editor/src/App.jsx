@@ -15,6 +15,7 @@ import Editor from "./pages/Editor";
 //import Chat from "./pages/Chat";
 import MyPage from "./pages/MyPage";
 import Workspace from "./pages/Workspace/Workspace";
+import DBConnect from "./pages/DBConnect";
 
 
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/ide" element={<Editor />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/query-builder" element={<Workspace />} />
+        <Route path="/DBConnect" element={<DBConnect />} />
       </Routes>
     </Router>
   );
