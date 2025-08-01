@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid, useDisclosure } from "@chakra-ui/react";
-import { v4 as uuidv4 } from "uuid"; // uuid 추가
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
-import { mockProjects, mockUser, mockDbConnections, mockDbSchemas } from "@/mock/mockData";
-//import axios from "axios";
+// mock 데이터는 백업용으로 유지
+import { mockUser, mockDbConnections, mockDbSchemas } from "@/mock/mockData";
 
 import "../styles/dashboard.css";
 import BoltIcon from "@/components/icons/BoltIcon";
@@ -27,14 +28,50 @@ import InviteMemberModal from "@/components/modals/InviteMemberModal";
 import { useTranslation } from "react-i18next";
 import RecentProjectsModal from "@/components/modals/RecentProjectsModal";
 
-// DBConnect 컴포넌트 임포트 (Dashboard에서 사용할 예정)
+// DBConnect 컴포넌트 임포트
 import DBConnect from "./DBConnect";
+
+// API 기본 설정
+const API_BASE_URL = "http://20.196.89.99:8080";
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// 요청 인터셉터 - JWT 토큰 자동 추가
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 응답 인터셉터 - 401 에러 처리
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // 토큰 만료 또는 인증 실패
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
-  // DB 연결 상태를 관리할 새로운 상태 추가
   const [dbConnections, setDbConnections] = useState([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editTargetProject, setEditTargetProject] = useState(null);
@@ -51,58 +88,138 @@ const Dashboard = () => {
   const [projectCount, setProjectCount] = useState(0);
   const [queryCount, setQueryCount] = useState(0);
   const [tableItemCount, setTableItemCount] = useState(0);
+  const [error, setError] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // API 함수들
+  const fetchProjects = async () => {
+    try {
+      const response = await api.get('/api/projects');
+      return response.data;
+    } catch (error) {
+      console.error('프로젝트 조회 실패:', error);
+      throw error;
+    }
+  };
+
+  const createProject = async (projectData) => {
+    try {
+      const response = await api.post('/api/projects', projectData);
+      return response.data;
+    } catch (error) {
+      console.error('프로젝트 생성 실패:', error);
+      throw error;
+    }
+  };
+
+  const updateProject = async (projectId, updateData) => {
+    try {
+      const response = await api.put(`/api/projects/${projectId}`, updateData);
+      return response.data;
+    } catch (error) {
+      console.error('프로젝트 수정 실패:', error);
+      throw error;
+    }
+  };
+
+  const deleteProject = async (projectId) => {
+    try {
+      await api.delete(`/api/projects/${projectId}`);
+      return true;
+    } catch (error) {
+      console.error('프로젝트 삭제 실패:', error);
+      throw error;
+    }
+  };
+
+  const fetchDbConnections = async () => {
+    try {
+      const response = await api.get('/api/db-connections');
+      return response.data;
+    } catch (error) {
+      console.error('DB 연결 조회 실패:', error);
+      throw error;
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await api.get('/api/user/profile');
+      return response.data;
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      throw error;
+    }
+  };
+
+  // 초기 데이터 로딩
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        // mock 데이터로 API 호출 시뮬레이션
-        const currentUser = mockUser;
-        setUser(currentUser);
-        if (currentUser) {
-          // 사용자의 프로젝트만 필터링
-          const userProjects = mockProjects.filter((p) => p.userId === currentUser.id);
-
-          // mockDbConnections에서 해당 프로젝트의 DB 연결 정보도 가져옵니다.
-          // 여기서 중요한 것은 mockDbConnections 자체가 전체 DB 연결 목록을 담고 있다는 가정입니다.
-          // 실제 API에서는 userProjects와 관련된 DB Connections를 fetch 해와야 합니다.
-          const userDbConnections = mockDbConnections.filter((conn) =>
-            userProjects.some((p) => p.id === conn.projectId)
-          );
-
-          // 프로젝트에 isDbConnected 플래그 추가 (초기 로드 시)
-          const projectsWithDbStatus = userProjects.map((project) => ({
-            ...project,
-            isDbConnected: userDbConnections.some((conn) => conn.projectId === project.id),
-          }));
-
-          setProjects(projectsWithDbStatus);
-          setDbConnections(userDbConnections); // DB 연결 상태도 설정
+        // 토큰 확인
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+          // 토큰이 없으면 mock 데이터 사용 (비로그인 상태)
+          setUser(null);
+          setProjects([]);
+          setDbConnections([]);
+          setLoading(false);
+          return;
         }
+
+        // 병렬로 데이터 가져오기
+        const [userProfile, projectsData, dbConnectionsData] = await Promise.all([
+          fetchUserProfile(),
+          fetchProjects(),
+          fetchDbConnections().catch(() => []) // DB 연결은 실패해도 계속 진행
+        ]);
+
+        setUser(userProfile);
+        
+        // 프로젝트에 DB 연결 상태 추가
+        const projectsWithDbStatus = projectsData.map((project) => ({
+          ...project,
+          isDbConnected: dbConnectionsData.some((conn) => conn.projectId === project.id),
+        }));
+
+        setProjects(projectsWithDbStatus);
+        setDbConnections(dbConnectionsData);
+
       } catch (error) {
         console.error("데이터 로딩 실패:", error);
-        setUser(null);
-        setProjects([]);
-        setDbConnections([]);
+        setError("데이터를 불러오는데 실패했습니다.");
+        
+        // API 실패 시 mock 데이터로 폴백
+        if (error.response?.status !== 401) {
+          setUser(mockUser);
+          setProjects([]);
+          setDbConnections(mockDbConnections);
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
+  // 프로젝트 상태 계산
   useEffect(() => {
     const fetchProjectStatus = () => {
       let filteredProjects = projects;
       if (selectedProjectId !== null) {
         filteredProjects = projects.filter((p) => p.id === selectedProjectId);
       }
+      
       const totalProjects = selectedProjectId === null ? projects.length : 1;
       let totalQueries = 0;
+      
       filteredProjects.forEach((project) => {
         project.files?.forEach((file) => {
           if (file.name.endsWith(".sql")) {
@@ -110,14 +227,13 @@ const Dashboard = () => {
           }
         });
       });
+
       let totalTables = 0;
       if (selectedProjectId !== null) {
-        // 선택된 프로젝트의 DB 연결에서 스키마를 찾습니다.
         const dbConn = dbConnections.find((conn) => conn.projectId === selectedProjectId);
         const schema = mockDbSchemas[dbConn?.id];
         totalTables = schema?.tables?.length || 0;
       } else {
-        // 모든 프로젝트의 테이블 수 집계
         dbConnections.forEach((conn) => {
           const projectExists = projects.some((p) => p.id === conn.projectId);
           if (projectExists) {
@@ -128,18 +244,20 @@ const Dashboard = () => {
           }
         });
       }
+
       setProjectCount(totalProjects);
       setQueryCount(totalQueries);
       setTableItemCount(totalTables);
     };
-    fetchProjectStatus();
-  }, [selectedProjectId, projects, dbConnections]); // dbConnections를 의존성 배열에 추가
 
+    fetchProjectStatus();
+  }, [selectedProjectId, projects, dbConnections]);
+
+  // 드롭다운 외부 클릭 감지
   useEffect(() => {
-    // 바깥 클릭을 감지하는 함수
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setActiveDropdownId(null); // 메뉴를 닫습니다.
+        setActiveDropdownId(null);
       }
     };
 
@@ -152,24 +270,75 @@ const Dashboard = () => {
     };
   }, [activeDropdownId]);
 
-  // EditProjectModal에서 '저장'을 눌렀을 때 실행될 함수
-  const handleSaveProject = (updatedData) => {
-    setProjects((prevProjects) =>
-      prevProjects.map((project) => {
-        if (project.id === updatedData.id) {
-          return {
-            ...project,
-            name: updatedData.newName,
-            description: updatedData.newDescription,
-          };
-        }
-        return project;
-      })
-    );
-    setIsEditModalOpen(false);
+  // 프로젝트 생성 핸들러
+  const handleCreateProject = async (projectData) => {
+    try {
+      const newProject = await createProject({
+        ...projectData,
+        id: uuidv4(), // 임시 ID, 서버에서 실제 ID 생성
+      });
+      
+      setProjects((prevProjects) => [...prevProjects, {
+        ...newProject,
+        isDbConnected: false
+      }]);
+      
+      setIsCreateModalOpen(false);
+      return newProject;
+    } catch (error) {
+      console.error('프로젝트 생성 실패:', error);
+      alert('프로젝트 생성에 실패했습니다.');
+    }
   };
 
-  // '수정' 버튼 클릭 시, 수정할 프로젝트 객체 전체를 상태에 저장
+  // 프로젝트 수정 핸들러
+  const handleSaveProject = async (updatedData) => {
+    try {
+      const updatedProject = await updateProject(updatedData.id, {
+        name: updatedData.newName,
+        description: updatedData.newDescription,
+      });
+
+      setProjects((prevProjects) =>
+        prevProjects.map((project) => {
+          if (project.id === updatedData.id) {
+            return {
+              ...project,
+              name: updatedData.newName,
+              description: updatedData.newDescription,
+              updatedAt: updatedProject.updatedAt || new Date().toISOString(),
+            };
+          }
+          return project;
+        })
+      );
+      
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('프로젝트 수정 실패:', error);
+      alert('프로젝트 수정에 실패했습니다.');
+    }
+  };
+
+  // 프로젝트 삭제 핸들러
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetProject) return;
+
+    try {
+      await deleteProject(deleteTargetProject.id);
+      
+      setProjects(projects.filter((p) => p.id !== deleteTargetProject.id));
+      setDbConnections((prev) => prev.filter((conn) => conn.projectId !== deleteTargetProject.id));
+      
+      setIsDeleteModalOpen(false);
+      setDeleteTargetProject(null);
+    } catch (error) {
+      console.error('프로젝트 삭제 실패:', error);
+      alert('프로젝트 삭제에 실패했습니다.');
+    }
+  };
+
+  // 수정 버튼 핸들러
   const handleEdit = (projectId) => {
     const projectToEdit = projects.find((p) => p.id === projectId);
     if (projectToEdit) {
@@ -178,6 +347,7 @@ const Dashboard = () => {
     }
   };
 
+  // 삭제 버튼 핸들러
   const handleDeleteClick = (projectId) => {
     const projectToDelete = projects.find((p) => p.id === projectId);
     if (projectToDelete) {
@@ -186,17 +356,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteTargetProject) {
-      setProjects(projects.filter((p) => p.id !== deleteTargetProject.id));
-      // 프로젝트 삭제 시, 해당 DB 연결도 삭제 (mockDbConnections에서도 제거되어야 하지만, 여기서는 직접 조작)
-      setDbConnections((prev) => prev.filter((conn) => conn.projectId !== deleteTargetProject.id));
-
-      setIsDeleteModalOpen(false);
-      setDeleteTargetProject(null);
-    }
-  };
-
+  // 초대 버튼 핸들러
   const handleInvite = (projectId) => {
     const projectToInvite = projects.find((p) => p.id === projectId);
     if (projectToInvite) {
@@ -205,12 +365,12 @@ const Dashboard = () => {
     }
   };
 
-  //프로젝트 리스트 더보기
+  // 드롭다운 토글
   const toggleDropdown = (projectId) => {
     setActiveDropdownId((prev) => (prev === projectId ? null : projectId));
   };
 
-  //비로그인 사용자 프로젝트 생성 버튼 사용시, 로그인 안내
+  // 프로젝트 생성 모달 열기
   const handleOpenCreateModal = () => {
     if (!user) {
       alert("로그인이 필요합니다.");
@@ -219,34 +379,54 @@ const Dashboard = () => {
     setIsCreateModalOpen(true);
   };
 
-  //프로젝트 열기
+  // 프로젝트 열기
   const handleOpenProject = (projectId) => {
     navigate(`/editor/${projectId}`);
   };
 
-  //프로젝트 선택 변경
+  // 프로젝트 선택 변경
   const handleSelectProject = (id) => {
     setSelectedProjectId(id);
     setIsDropdownOpen(false);
   };
-  //마이페이지 이동
+
+  // 마이페이지 이동
   const handleUserProfileClick = () => {
     if (user) {
       navigate("/mypage");
     }
   };
 
-  // DBConnect에서 새 DB 연결이 추가될 때 호출될 함수
+  // DB 연결 추가 핸들러
   const handleAddDbConnection = (newConnection) => {
-    // Dashboard의 dbConnections 상태 업데이트
     setDbConnections((prev) => [...prev, newConnection]);
-    // 해당 프로젝트의 isDbConnected 플래그도 업데이트
     setProjects((prev) =>
       prev.map((project) =>
-        project.id === newConnection.projectId ? { ...project, isDbConnected: true } : project
+        project.id === newConnection.projectId 
+          ? { ...project, isDbConnected: true } 
+          : project
       )
     );
   };
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <div>데이터를 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="dashboard-error">
+        <div>{error}</div>
+        <button onClick={() => window.location.reload()}>다시 시도</button>
+      </div>
+    );
+  }
 
   return (
     <Box p={8} bg="#f9f8f6" minH="100vh" color="text.primary">

@@ -196,7 +196,7 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const base_url = "http://localhost:8080";
+  const base_url = "http://20.196.89.99:8080/"
 
   useEffect(() => {
     const fetchUser = async () => {
