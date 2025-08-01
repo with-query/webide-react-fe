@@ -1,72 +1,4 @@
-/*
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  Text,
-} from "@chakra-ui/react";
-import { useTranslation } from "react-i18next";
 
-
-const SignupModal = ({ isOpen, onClose, onOpenLogin }) => {
-const { t } = useTranslation();
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{t("Sign Up")}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-          <FormControl mb={3}>
-            <FormLabel>{t("Email")}</FormLabel>
-            <Input placeholder={t("Email")} />
-          </FormControl>
-
-          <FormControl mb={3}>
-            <FormLabel>{t("Name")}</FormLabel>
-            <Input placeholder={t("Name")} />
-          </FormControl>
-
-          <FormControl mb={3}>
-            <FormLabel>{t("Password")}</FormLabel>
-            <Input type="password" placeholder={t("Password")}/>
-          </FormControl>
-
-          <FormControl mb={3}>
-            <FormLabel>{t("Confirm Password")}</FormLabel>
-            <Input type="password" placeholder={t("Confirm Password")}rkdl />
-          </FormControl>
-
-          <Button colorScheme="brown" w="100%" mt={2}>
-            {t("Register")}
-          </Button>
-
-          <Text mt={4} fontSize="sm" textAlign="center">
-            {t("Already have an account?")}{" "}
-            <Text as="span" color="orange.400" cursor="pointer" onClick={() => {
-              onClose();
-              onOpenLogin();
-            }}>
-              {t("Login")}
-            </Text>
-          </Text>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-  );
-};
-
-export default SignupModal;
-
-*/
 //API 연동 버전 회원가입 모달
 
 import {
@@ -82,12 +14,12 @@ import {
   Button,
   Text,
   useToast,
+  FormHelperText,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
-// ✨ base_url을 여기에서 정의
-//const BASE_URL = "http://localhost:8080";
+
 const BASE_URL = "http://20.196.89.99:8080";
 const SignupModal = ({ isOpen, onClose, onOpenLogin }) => {
   const { t } = useTranslation();
@@ -210,6 +142,9 @@ const SignupModal = ({ isOpen, onClose, onOpenLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <FormHelperText color="gray.500" fontSize="sm">
+              {t("Password must be at least 10 characters long and include uppercase, lowercase, number, and special character.")}
+            </FormHelperText>
           </FormControl>
 
           <FormControl mb={3}>

@@ -348,7 +348,7 @@ import LoadingIcon from "../icons/LoadingIcon";
 const CreateProjectModal = ({
   isOpen,
   onClose,
-  onNext,
+  onCreateProject, // prop 이름을 onCreateProject로 변경
   skipStep1 = false,
   presetProjectName = ""
 }) => {
@@ -440,7 +440,7 @@ const CreateProjectModal = ({
         const invalidEmail = invitedEmails
           .split(",")
           .map(email => email.trim())
-          .find(email => !emailRegex.test(email));
+          .find(email => email && !emailRegex.test(email)); // 빈 문자열 필터링 조건 추가
         if (invalidEmail) {
           alert(t(`"${invalidEmail}" is not a valid email format.`));
           return;
@@ -451,15 +451,20 @@ const CreateProjectModal = ({
         setStep(3);
       } else {
         // DB 연결 안 할 경우 바로 프로젝트 생성 (혹은 연결정보 저장)
-        onNext({
-          name: projectName,
-          description: projectDescription,
-          dbConnected: false,
-          invitedEmails: invitedEmails
-            .split(",")
-            .map(e => e.trim())
-            .filter(Boolean)
-        });
+        if (onCreateProject) {
+          onCreateProject({
+            name: projectName,
+            description: projectDescription,
+            dbConnected: false,
+            invitedEmails: invitedEmails
+              .split(",")
+              .map(e => e.trim())
+              .filter(Boolean),
+            isPublic: false, // isPublic 정보 추가 (기본값)
+            dbType: null, // dbConfig를 보내지 않으므로 null로 설정
+            dbConfig: null, // dbConfig를 보내지 않으므로 null로 설정
+          });
+        }
         onClose();
       }
       return;
@@ -471,17 +476,20 @@ const CreateProjectModal = ({
         return;
       }
 
-      onNext({
-        name: projectName,
-        description: projectDescription,
-        dbConnected: true,
-        dbType,
-        dbConfig,
-        invitedEmails: invitedEmails
-          .split(",")
-          .map(email => email.trim())
-          .filter(email => email.length > 0)
-      });
+      if (onCreateProject) {
+        onCreateProject({
+          name: projectName,
+          description: projectDescription,
+          dbConnected: true,
+          dbType,
+          dbConfig,
+          invitedEmails: invitedEmails
+            .split(",")
+            .map(email => email.trim())
+            .filter(email => email.length > 0),
+          isPublic: false, // isPublic 정보 추가 (기본값)
+        });
+      }
       onClose();
     }
   };
@@ -494,6 +502,8 @@ const CreateProjectModal = ({
     setIsTesting(true);
     setTestResult(null);
 
+    // 실제 백엔드 API 호출 로직은 여기에 구현
+    // 현재는 setTimeout으로 모의 테스트를 진행합니다.
     setTimeout(() => {
       console.log("백엔드 API 없음 - 연결 테스트를 성공으로 간주합니다.");
       setTestResult("success");
@@ -507,11 +517,6 @@ const CreateProjectModal = ({
     }
     return t("Next");
   };
-
-
-
-
-  
 
   return (
     <div className="modal-overlay">
@@ -527,7 +532,6 @@ const CreateProjectModal = ({
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder={t("project name")}
-                
               />
             </label>
 
