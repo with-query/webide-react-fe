@@ -79,6 +79,7 @@ import { FiFolder, FiUser } from 'react-icons/fi';
 import { BsCircleFill } from 'react-icons/bs';
 import { FaUserTie, FaUserGraduate } from 'react-icons/fa';
 import { useTranslation } from "react-i18next";
+import FolderIcon from "@/components/icons/FolderIcon";
 
 const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
   const { t } = useTranslation();
@@ -91,8 +92,12 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
       <Heading size="md" mb="4">{t("Chat")}</Heading>
       <VStack align="stretch" spacing={2}>
         {/* 팀 채팅 */}
-        <Flex align="center" gap="2">
-          <FiFolder />
+        <Flex align="center" gap="2" >
+          {/*<FiFolder />*/}
+          <Box boxSize="20px" color="#d57239">
+            <FolderIcon />
+          </Box>
+          
           <Text fontWeight="bold">{t("Team chat")}</Text>
         </Flex>
 
@@ -114,7 +119,10 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
 
         {/* 1:1 채팅 */}
         <Flex align="center" gap="2">
-          <FiUser />
+          <Box color="#d57239" boxSize="20px" > 
+            <FiUser />
+          </Box>
+          
           <Text fontWeight="bold">{t("1:1 Chatting")}</Text>
         </Flex>
 
@@ -126,6 +134,7 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
             cursor="pointer"
             onClick={() => onSelectRoom(room)}
             fontWeight={selectedRoom === room ? 'bold' : 'normal'}
+            
           >
             {room === 'user-hong' ? <FaUserTie /> : <FaUserGraduate />}
             <Text>{room === 'user-hong' ? '홍길동' : '김개발'}</Text>

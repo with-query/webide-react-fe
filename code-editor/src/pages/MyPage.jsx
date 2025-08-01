@@ -196,12 +196,12 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const base_url = "http://20.196.89.99:8080/"
+   const BASE_URL = "http://20.196.89.99:8080";
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${base_url}/api/users/me`, {
+        const res = await fetch(`${BASE_URL}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -228,7 +228,7 @@ export default function MyPage() {
 
   const handleNicknameSave = async () => {
     try {
-      const res = await fetch(`${base_url}/api/users/me`, {
+      const res = await fetch(`${BASE_URL}/api/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -269,7 +269,7 @@ export default function MyPage() {
     }
 
     try {
-      const res = await fetch(`${base_url}/api/users/password`, {
+      const res = await fetch(`${BASE_URL}/api/users/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -306,7 +306,7 @@ export default function MyPage() {
     if (!window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후 복구는 불가능합니다.")) return;
 
     try {
-      const res = await fetch(`${base_url}/api/users/me`, {
+      const res = await fetch(`${BASE_URL}/api/users/me`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

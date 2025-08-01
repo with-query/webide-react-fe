@@ -285,10 +285,14 @@ const DBConnect = () => {
                       {db.role}
                     </Badge>
                   )}
-                </Flex>
-                <Badge colorScheme={db.status === "connected" ? "green" : "red"}>
+                    <Badge colorScheme={db.status === "connected" ? "green" : "red"}>
                   {statusText[db.status]}
                 </Badge>
+                  
+                </Flex>
+                {/*<Badge colorScheme={db.status === "connected" ? "green" : "red"}>
+                  {statusText[db.status]}
+                </Badge>*/}
               </Flex>
 
               <Text fontSize="sm" color="gray.500" mb={2}>
