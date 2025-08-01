@@ -44,7 +44,29 @@ const Workspace = () => {
   const [queryResults, setQueryResults] = useState(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
-  const handleRunQuery = () => { /* ... */ };
+  const handleRunQuery = async () => {
+    setIsExecuting(true); // 로딩 시작
+    setQueryResults(null); // 이전 결과 초기화
+
+    console.log("실행할 쿼리:", sqlQuery);
+
+    // 1.5초 후 Mock 데이터 반환을 시뮬레이션하는 비동기 로직
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // 실제로는 여기서 백엔드 API를 호출합니다. ex: const data = await api.runQuery(sqlQuery);
+    const mockData = {
+      columns: ['customer_id', 'customer_name', 'order_id', 'order_date'],
+      rows: [
+        [1, 'John Doe', 101, '2024-01-15'],
+        [2, 'Jane Smith', 102, '2024-01-17'],
+      ]
+    };
+
+    setQueryResults(mockData); // 결과 상태 업데이트
+    setIsExecuting(false); // 로딩 종료
+  };
+
+  console.log("===[Workspace 상태] Nodes 개수:", Object.keys(nodes).length);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -59,11 +81,12 @@ const Workspace = () => {
               <PanelResizeHandle className="resize-handle-vertical" />
               <Panel defaultSize={50} minSize={30}>
                 <QueryBuilder
-                  setSqlQuery={setSqlQuery}
                   nodes={nodes}
-                  setNodes={setNodes}
+                  setNodes={setNodes} // 세터 함수 전달
                   connections={connections}
-                  setConnections={setConnections}
+                  setConnections={setConnections} // 세터 함수 전달
+                  whereClauses={whereClauses} // where절 생성을 위해 전달
+                  setSqlQuery={setSqlQuery}
                 />
               </Panel>
               <PanelResizeHandle className="resize-handle-vertical" />

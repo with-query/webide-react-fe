@@ -7,55 +7,60 @@ import TableNode from './TableNode';
 import { generateSql } from '@/components/utils/sqlGenerator';
 
 const getOrthogonalPath = (from, to, nodes, nodeRefs, containerRef) => {
+  // ... (이 함수는 수정할 필요 없음, 그대로 두세요) ...
   const fromNodeRef = nodeRefs.current[from.fromNodeId];
-  const toNodeRef = nodeRefs.current[to.toNodeId];
-  if (!from?.ref?.current || !to?.ref?.current || !fromNodeRef || !toNodeRef) return null;
+  const toNodeRef = nodeRefs.current[to.toNodeId];
+  if (!from?.ref?.current || !to?.ref?.current || !fromNodeRef || !toNodeRef) return null;
 
-  const container = containerRef.current;
-  if (!container) return null;
+  const container = containerRef.current;
+  if (!container) return null;
 
-  const fromNode = nodes[from.fromNodeId];
-  const toNode = nodes[to.toNodeId];
-  if (!fromNode || !toNode) return null;
+  const fromNode = nodes[from.fromNodeId];
+  const toNode = nodes[to.toNodeId];
+  if (!fromNode || !toNode) return null;
 
-  const scrollTop = container.scrollTop;
-  const scrollLeft = container.scrollLeft;
-  const containerRect = container.getBoundingClientRect();
-  const fromNodeRect = fromNodeRef.getBoundingClientRect();
-  const toNodeRect = toNodeRef.getBoundingClientRect();
-  const fromColumnRect = from.ref.current.getBoundingClientRect();
-  const toColumnRect = to.ref.current.getBoundingClientRect();
+  const scrollTop = container.scrollTop;
+  const scrollLeft = container.scrollLeft;
+  const containerRect = container.getBoundingClientRect();
+  const fromNodeRect = fromNodeRef.getBoundingClientRect();
+  const toNodeRect = toNodeRef.getBoundingClientRect();
+  const fromColumnRect = from.ref.current.getBoundingClientRect();
+  const toColumnRect = to.ref.current.getBoundingClientRect();
 
-  const isTargetRight = (toNodeRect.left + toNodeRect.width / 2) > (fromNodeRect.left + fromNodeRect.width / 2);
+  const isTargetRight = (toNodeRect.left + toNodeRect.width / 2) > (fromNodeRect.left + fromNodeRect.width / 2);
 
-  const startPoint = {
-    x: (isTargetRight ? fromNodeRect.right : fromNodeRect.left) - containerRect.left + scrollLeft,
-    y: (fromColumnRect.top + fromColumnRect.height / 2) - containerRect.top + scrollTop,
-  };
-  const endPoint = {
-    x: (isTargetRight ? toNodeRect.left : toNodeRect.right) - containerRect.left + scrollLeft,
-    y: (toColumnRect.top + toColumnRect.height / 2) - containerRect.top + scrollTop,
-  };
+  const startPoint = {
+    x: (isTargetRight ? fromNodeRect.right : fromNodeRect.left) - containerRect.left + scrollLeft,
+    y: (fromColumnRect.top + fromColumnRect.height / 2) - containerRect.top + scrollTop,
+  };
+  const endPoint = {
+    x: (isTargetRight ? toNodeRect.left : toNodeRect.right) - containerRect.left + scrollLeft,
+    y: (toColumnRect.top + toColumnRect.height / 2) - containerRect.top + scrollTop,
+  };
 
-  const threshold = 5;
-  const yDifference = Math.abs(startPoint.y - endPoint.y);
+  const threshold = 5;
+  const yDifference = Math.abs(startPoint.y - endPoint.y);
 
-  if (yDifference < threshold && isTargetRight) {
-    return `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
-  }
-  
-  const offset = 40;
-  const midPointX = startPoint.x + (isTargetRight ? offset : -offset);
-  return `M ${startPoint.x} ${startPoint.y} H ${midPointX} V ${endPoint.y} H ${endPoint.x}`;
+  if (yDifference < threshold && isTargetRight) {
+    return `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+  }
+  
+  const offset = 40;
+  const midPointX = startPoint.x + (isTargetRight ? offset : -offset);
+  return `M ${startPoint.x} ${startPoint.y} H ${midPointX} V ${endPoint.y} H ${endPoint.x}`;
 };
 
-const QueryBuilder = ({ setSqlQuery }) => {
-  const [nodes, setNodes] = useState({});
-  const [connections, setConnections] = useState([]);
+// ❗️❗️❗️ 여기부터 중요합니다. props를 모두 받아오도록 수정 ❗️❗️❗️
+const QueryBuilder = ({
+  nodes, setNodes,
+  connections, setConnections,
+  whereClauses,
+  setSqlQuery
+}) => {
+  console.log("---[QueryBuilder 시작] Props로 받은 Nodes:", Object.keys(nodes).length);
+
   const [contextMenu, setContextMenu] = useState(null);
   const [draggedNode, setDraggedNode] = useState(null);
-  
-  // ✨ 모든 수정 관련 상태를 여기서 관리합니다.
   const [editingColumnType, setEditingColumnType] = useState(null);
   const [editingColumnName, setEditingColumnName] = useState(null);
   const [editingNodeId, setEditingNodeId] = useState(null);
@@ -63,8 +68,6 @@ const QueryBuilder = ({ setSqlQuery }) => {
   const containerRef = useRef();
   const columnRefs = useRef({});
   const nodeRefs = useRef({});
-
-  const [whereClauses, setWhereClauses] = useState([]);
 
   const setColumnRef = (nodeId, columnName, el) => {
     if (!columnRefs.current[nodeId]) columnRefs.current[nodeId] = {};
@@ -75,11 +78,15 @@ const QueryBuilder = ({ setSqlQuery }) => {
   };
 
   const updateQuery = useCallback(() => {
-    const sql = generateSql(nodes, connections, whereClauses); // 인자 추가
+    const sql = generateSql(nodes, connections, whereClauses);
     setSqlQuery(sql);
   }, [nodes, connections, whereClauses, setSqlQuery]);
 
-  useEffect(updateQuery, [nodes, connections, updateQuery]);
+  // ✨ 의존성 배열에 whereClauses를 추가하여 조건 변경 시에도 SQL이 업데이트 되도록 합니다.
+  useEffect(() => {
+    console.log("---[QueryBuilder 이펙트] SQL 업데이트 실행!");
+    updateQuery();
+  }, [nodes, connections, whereClauses, updateQuery]);
 
   const handleConnect = useCallback((from, to) => {
     const connectionExists = connections.some(c =>
@@ -87,9 +94,10 @@ const QueryBuilder = ({ setSqlQuery }) => {
       (c.from.fromNodeId === to.toNodeId && c.from.fromColumnName === to.toColumnName && c.to.toNodeId === from.fromNodeId && c.to.toColumnName === from.fromColumnName)
     );
     if (!connectionExists) {
+      // ✨ 부모(Workspace)의 상태를 업데이트합니다.
       setConnections(prev => [...prev, { from, to, id: Math.random().toString() }]);
     }
-  }, [connections]);
+  }, [connections, setConnections]); // ✨ setConnections 의존성 추가
 
   const handleNodeDrag = useCallback((dragInfo) => {
     setDraggedNode(dragInfo);
@@ -108,6 +116,7 @@ const QueryBuilder = ({ setSqlQuery }) => {
         if(!delta) return;
         const left = Math.round(item.left + delta.x);
         const top = Math.round(item.top + delta.y);
+        // ✨ 부모(Workspace)의 상태를 업데이트합니다.
         setNodes(prev => ({ ...prev, [item.id]: { ...prev[item.id], left, top } }));
       } else if (itemType === 'TABLE') {
         if (nodes[item.id]) return;
@@ -115,10 +124,13 @@ const QueryBuilder = ({ setSqlQuery }) => {
         if (!clientOffset) return;
         const left = clientOffset.x - containerRect.left + currentContainer.scrollLeft;
         const top = clientOffset.y - containerRect.top + currentContainer.scrollTop;
-        setNodes(prev => ({ ...prev, [item.id]: { ...item, left, top } }));
+        const newAlias = item.name.charAt(0).toLowerCase() + (Object.keys(nodes).length + 1);
+        // ✨ 부모(Workspace)의 상태를 업데이트합니다.
+        console.log(`---[QueryBuilder 드롭] ${item.name} 테이블 추가 시도!`);
+        setNodes(prev => ({ ...prev, [item.id]: { ...item, left, top, alias: newAlias } }));
       }
     },
-  }), [nodes]);
+  }), [nodes, setNodes]); // ✨ setNodes 의존성 추가
 
   const handleNodeContextMenu = (e, nodeId) => {
     e.preventDefault();
@@ -130,6 +142,7 @@ const QueryBuilder = ({ setSqlQuery }) => {
   const handleDeleteNode = () => {
     const nodeIdToDelete = contextMenu?.nodeId;
     if (!nodeIdToDelete) return;
+    // ✨ 부모(Workspace)의 상태를 업데이트합니다.
     setNodes(prev => {
       const { [nodeIdToDelete]: _, ...remainingNodes } = prev;
       return remainingNodes;
@@ -139,10 +152,12 @@ const QueryBuilder = ({ setSqlQuery }) => {
   };
 
   const handleAliasChange = (nodeId, newAlias) => {
+    // ✨ 부모(Workspace)의 상태를 업데이트합니다.
     setNodes(prev => ({ ...prev, [nodeId]: { ...prev[nodeId], alias: newAlias || prev[nodeId].name } }));
     setEditingNodeId(null);
   };
 
+  // ... 이하 컬럼명, 타입 변경 핸들러들도 모두 setNodes(props로 받은 함수)를 사용하므로 수정할 필요 없습니다 ...
   const handleColumnTypeChange = (nodeId, columnName, newType) => {
     setNodes(prev => {
       const newNodes = JSON.parse(JSON.stringify(prev));
@@ -155,7 +170,7 @@ const QueryBuilder = ({ setSqlQuery }) => {
       return newNodes;
     });
   };
-  
+
   const handleColumnNameChange = (nodeId, oldName, newName) => {
     if (!newName || oldName === newName) {
       setEditingColumnName(null);
@@ -174,7 +189,7 @@ const QueryBuilder = ({ setSqlQuery }) => {
     setEditingColumnName(null);
   };
 
-
+  // ... 이하 return 문은 수정할 필요 없음 ...
   return (
     <Box p={4} height="100%" display="flex" flexDirection="column" bg="brand.100">
       <Box
@@ -186,12 +201,16 @@ const QueryBuilder = ({ setSqlQuery }) => {
         ref={el => { dropRef(el); containerRef.current = el; }}
         overflow="auto"
         onClick={closeContextMenu}
+        style={{
+          position: 'relative',
+          zIndex: 0
+        }}
       >
         <svg
           key={JSON.stringify(Object.values(nodes).map(n => `${n.left},${n.top}`))}
           width="2000px"
           height="2000px"
-          style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, zIndex: 1, pointerEvents: 'none'}}
         >
           {connections.map(conn => {
             let tempNodes = { ...nodes };
