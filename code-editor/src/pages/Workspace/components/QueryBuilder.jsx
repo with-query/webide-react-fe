@@ -52,9 +52,10 @@ const getOrthogonalPath = (from, to, nodes, nodeRefs, containerRef) => {
 
 // ❗️❗️❗️ 여기부터 중요합니다. props를 모두 받아오도록 수정 ❗️❗️❗️
 const QueryBuilder = ({
+  dbSchema,
   nodes, setNodes,
   connections, setConnections,
-  whereClauses,
+  whereClauses, setWhereClauses,
   setSqlQuery
 }) => {
   console.log("---[QueryBuilder 시작] Props로 받은 Nodes:", Object.keys(nodes).length);
@@ -119,7 +120,12 @@ const QueryBuilder = ({
         // ✨ 부모(Workspace)의 상태를 업데이트합니다.
         setNodes(prev => ({ ...prev, [item.id]: { ...prev[item.id], left, top } }));
       } else if (itemType === 'TABLE') {
-        if (nodes[item.id]) return;
+        
+        if (nodes[item.id]) {
+          console.warn(`테이블 '${item.name}'은 이미 빌더에 있습니다.`);
+          return;
+        }
+
         const clientOffset = monitor.getSourceClientOffset();
         if (!clientOffset) return;
         const left = clientOffset.x - containerRect.left + currentContainer.scrollLeft;
