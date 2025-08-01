@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Grid } from "@chakra-ui/react";
+import { Box, Grid,useDisclosure } from "@chakra-ui/react";
 
 import { mockProjects, mockUser, mockDbConnections, mockDbSchemas } from "@/mock/mockData";
 //import axios from "axios";
@@ -24,7 +24,7 @@ import EditProjectModal from "@/components/modals/EditProjectModal";
 import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
 import InviteMemberModal from "@/components/modals/InviteMemberModal";
 import { useTranslation } from "react-i18next";
-
+import RecentProjectsModal from "@/components/modals/RecentProjectsModal";
 
 const Dashboard = () => {    
     const [loading, setLoading] = useState(true);
@@ -45,6 +45,7 @@ const Dashboard = () => {
     const [projectCount, setProjectCount] = useState(0);
     const [queryCount, setQueryCount] = useState(0);
     const [tableItemCount, setTableItemCount] = useState(0);
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -338,11 +339,23 @@ const Dashboard = () => {
                                 <p className="quick-action-title">{t("New query project")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
                             </div>
-                            <div className="quick-action-item" onClick={() => user && navigate("/workspace")} role="button" tabIndex={0}>
+                            {/*<div className="quick-action-item" onClick={() => user && navigate("/workspace")} role="button" tabIndex={0}>
+                                <RecentIcon className="quick-action-icon recent-project" />
+                                <p className="quick-action-title">{t("Recent project")}</p>
+                                <p className="quick-action-arrow">&gt;</p>
+                            </div>*/}
+                            <div className="quick-action-item" onClick={user ? onOpen : undefined} role="button" tabIndex={0}>
                                 <RecentIcon className="quick-action-icon recent-project" />
                                 <p className="quick-action-title">{t("Recent project")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
                             </div>
+                            <RecentProjectsModal
+                                isOpen={isOpen}
+                                onClose={onClose}
+                                projects={projects}
+                                onSelect={handleOpenProject}
+                            />
+
                             <div className="quick-action-item" onClick={() => user && setIsChatModalOpen(true)} role="button" tabIndex={0}>
                                 <ChatIcon className="quick-action-icon chat" />
                                 <p className="quick-action-title">{t("Team chat")}</p>
