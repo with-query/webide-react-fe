@@ -1,4 +1,4 @@
-
+/*
 import {
   Modal,
   ModalOverlay,
@@ -66,8 +66,9 @@ const { t } = useTranslation();
 
 export default SignupModal;
 
-/*
+*/
 //API 연동 버전 회원가입 모달
+
 import {
   Modal,
   ModalOverlay,
@@ -75,84 +76,104 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  Button,
-  Input,
   FormControl,
   FormLabel,
-  Checkbox,
+  Input,
+  Button,
   Text,
-  Flex,
   useToast,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
-const base_url = "http://localhost:8080";
-
-const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSuccess }) => {
+// ✨ base_url을 여기에서 정의
+//const BASE_URL = "http://localhost:8080";
+const BASE_URL = "http://20.196.89.99:8080";
+const SignupModal = ({ isOpen, onClose, onOpenLogin }) => {
   const { t } = useTranslation();
   const toast = useToast();
 
-  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = async () => {
-    if (!emailOrUsername || !password) {
+  const handleRegister = async () => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{}|;:'",.<>/?~]).{10,}$/;
+
+    // 비밀번호 확인 검사
+    if (password !== confirmPassword) {
       toast({
-        title: "모든 필드를 입력해주세요.",
-        status: "warning",
+        title: t("Passwords do not match."),
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
       return;
     }
 
-    setIsLoading(true);
+    // 비밀번호 형식 검사
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: t("Invalid password format."),
+        description: t(
+          "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character."
+        ),
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
-      const response = await fetch(`${base_url}/api/auth/login`, {
+      const response = await fetch(`${BASE_URL}/api/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // 쿠키 저장용
         body: JSON.stringify({
-          emailOrUsername,
+          email,
+          nickname,
           password,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("로그인 실패");
+      const statusCode = response.status;
+      const result = await response.json();
+
+      // 콘솔 로그 출력
+      console.log("Response status:", statusCode);
+      console.log("Response body:", result);
+
+      if (statusCode === 201) {
+        toast({
+          title: t("Registration successful."),
+          description: result.message,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        onClose();
+        onOpenLogin();
+      } else {
+        toast({
+          title: t("Registration failed."),
+          description: result.message || t("An error occurred."),
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
-
-      const data = await response.json();
-      console.log("로그인 성공:", data);
-
-      // 예: accessToken 저장 또는 사용자 상태 업데이트
-      // localStorage.setItem("accessToken", data.accessToken);
-
-      toast({
-        title: "로그인 성공",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
-
-      onLoginSuccess?.(data);
-      onClose();
     } catch (error) {
-      console.error("로그인 에러:", error);
+      console.error("Error during registration:", error);
       toast({
-        title: "로그인 실패",
-        description: "이메일 또는 비밀번호를 확인해주세요.",
+        title: t("Network error."),
+        description: error.message,
         status: "error",
         duration: 3000,
         isClosable: true,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -160,17 +181,27 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{t("Login")}</ModalHeader>
+        <ModalHeader>{t("Sign Up")}</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody pb={6}>
           <FormControl mb={3}>
-            <FormLabel>{t("Email or Username")}</FormLabel>
+            <FormLabel>{t("Email")}</FormLabel>
             <Input
-              placeholder={t("Email or Username")}
-              value={emailOrUsername}
-              onChange={(e) => setEmailOrUsername(e.target.value)}
+              placeholder={t("Email")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </FormControl>
+
+          <FormControl mb={3}>
+            <FormLabel>{t("Name")}</FormLabel>
+            <Input
+              placeholder={t("Name")}
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+          </FormControl>
+
           <FormControl mb={3}>
             <FormLabel>{t("Password")}</FormLabel>
             <Input
@@ -180,40 +211,33 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
               onChange={(e) => setPassword(e.target.value)}
             />
           </FormControl>
-          <Flex justify="space-between" mb={4}>
-            <Checkbox>{t("Remember Me")}</Checkbox>
-            <Text
-              color="orange.400"
-              fontSize="sm"
-              cursor="pointer"
-              onClick={() => {
-                onClose();
-                onOpenForgot();
-              }}
-            >
-              {t("Forgot Password?")}
-            </Text>
-          </Flex>
-          <Button
-            colorScheme="orange"
-            w="100%"
-            onClick={handleLogin}
-            isLoading={isLoading}
-          >
-            {t("Login")}
+
+          <FormControl mb={3}>
+            <FormLabel>{t("Password Confirm")}</FormLabel>
+            <Input
+              type="password"
+              placeholder={t("Confirm Password")}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </FormControl>
+
+          <Button colorScheme="orange" w="100%" mt={2} onClick={handleRegister}>
+            {t("Register")}
           </Button>
+
           <Text mt={4} fontSize="sm" textAlign="center">
-            {t("No account?")}{" "}
+            {t("Already have an account?")}{" "}
             <Text
               as="span"
               color="orange.400"
               cursor="pointer"
               onClick={() => {
                 onClose();
-                onOpenSignup();
+                onOpenLogin();
               }}
             >
-              {t("Sign Up Now")}
+              {t("Login")}
             </Text>
           </Text>
         </ModalBody>
@@ -222,5 +246,4 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
   );
 };
 
-export default LoginModal;
-*/
+export default SignupModal;

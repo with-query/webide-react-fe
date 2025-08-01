@@ -115,7 +115,7 @@ const FileNode = ({
       >
         <HStack justify="space-between">
           <HStack spacing={2} cursor="pointer" onClick={() => toggleOpen(node.id)}>
-            {node.isOpen ? <FaFolderOpen /> : <FaFolder />}
+            {node.isOpen ? <FaFolderOpen color="#d57239"/> : <FaFolder color="#d57239" />}
             {isEditing ? (
               <Input
                 ref={inputRef}
@@ -182,7 +182,7 @@ const FileNode = ({
         {node.isOpen && (
           <VStack align="start" mt={2} spacing={1} color="text.primay">
             {node.children?.map((child) => (
-              <FileNode
+              <FileNode 
                 key={child.id}
                 node={child}
                 toggleOpen={toggleOpen}

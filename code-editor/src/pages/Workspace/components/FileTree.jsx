@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { Box, Text } from '@chakra-ui/react';
+import { FaFile } from "react-icons/fa";
 // import { getSchemas } from '../../../api';
 
 // 드래그 가능한 테이블 아이템 컴포넌트
@@ -25,7 +26,9 @@ const DraggableTable = ({ table }) => {
       borderRadius="md"
       whiteSpace="nowrap" 
     >
-      <Text>📄 {table.name}</Text>
+     {/* <Text>📄 {table.name}</Text>*/}
+     <FaFile />
+     {table.name}
     </Box>
   );
 };
