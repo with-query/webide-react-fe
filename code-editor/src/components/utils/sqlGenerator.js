@@ -1,3 +1,5 @@
+// src/components/utils/sqlGenerator.js
+
 export const generateSql = (nodes, connections) => {
   if (Object.keys(nodes).length === 0) {
     return "/* 테이블을 캔버스로 드래그하세요. */";
@@ -5,60 +7,48 @@ export const generateSql = (nodes, connections) => {
 
   const tableAliases = {};
   Object.values(nodes).forEach((node, i) => {
-    tableAliases[node.id] = node.alias || `t${i + 1}`;
+    tableAliases[node.id] = node.alias || node.name.charAt(0).toLowerCase() + (i + 1);
   });
 
-  const selectedColumns = Object.values(nodes).flatMap(node => 
-    node.columns.map(col => `  ${tableAliases[node.id]}.${col.name}`)
-  ).join(',\n');
+  const allColumns = Object.values(nodes).flatMap(node =>
+    (node.columns || []).map(col => `  ${tableAliases[node.id]}.${col.name}`)
+  );
+  
+  const selectClause = `SELECT\n${allColumns.join(',\n')}`;
 
   let fromClause = '';
   const joinClauses = [];
-  const allNodeIds = new Set(Object.keys(nodes));
+  const processedNodes = new Set();
 
-  if (connections.length > 0) {
-    const rootNodeId = connections[0].from.fromNodeId;
-    fromClause = `FROM ${nodes[rootNodeId].name} AS ${tableAliases[rootNodeId]}`;
-    allNodeIds.delete(rootNodeId);
-    
-    const processedConnections = new Set();
-
-    const buildJoins = (currentNodeId) => {
-        connections.forEach((conn, index) => {
-            if(processedConnections.has(index)) return;
-
-            let fromNode, toNode, fromCol, toCol;
-            if (conn.from.fromNodeId === currentNodeId) {
-                fromNode = conn.from;
-                toNode = conn.to;
-            } else if (conn.to.toNodeId === currentNodeId) {
-                fromNode = conn.to;
-                toNode = conn.from;
-            } else {
-                return;
-            }
-
-            joinClauses.push(
-                `JOIN ${nodes[toNode.toNodeId || toNode.fromNodeId].name} AS ${tableAliases[toNode.toNodeId || toNode.fromNodeId]} ON ${tableAliases[fromNode.fromNodeId || fromNode.toNodeId]}.${fromNode.fromColumnName || fromNode.toColumnName} = ${tableAliases[toNode.toNodeId || toNode.fromNodeId]}.${toNode.toColumnName || toNode.fromColumnName}`
-            );
-            processedConnections.add(index);
-            allNodeIds.delete(toNode.toNodeId || toNode.fromNodeId);
-            buildJoins(toNode.toNodeId || toNode.fromNodeId);
-        });
-    }
-    buildJoins(rootNodeId);
-
-
-  } else if (Object.keys(nodes).length > 0) {
-      const rootNode = Object.values(nodes)[0];
-      fromClause = `FROM ${rootNode.name} AS ${tableAliases[rootNode.id]}`;
-      allNodeIds.delete(rootNode.id);
+  if (Object.keys(nodes).length > 0) {
+    const firstNode = Object.values(nodes)[0];
+    fromClause = `FROM ${firstNode.name} AS ${tableAliases[firstNode.id]}`;
+    processedNodes.add(firstNode.id);
   }
 
-  // 연결되지 않은 테이블은 CROSS JOIN (또는 콤마) 형태로 추가
-  allNodeIds.forEach(nodeId => {
-      fromClause += `, ${nodes[nodeId].name} AS ${tableAliases[nodeId]}`;
-  });
+  connections.forEach(conn => {
+    const fromNodeId = conn.from.fromNodeId;
+    const fromColumnName = conn.from.fromColumnName;
+    const toNodeId = conn.to.toNodeId;
+    const toColumnName = conn.to.toColumnName;
 
-  return `SELECT\n${selectedColumns}\n${fromClause}\n${joinClauses.join('\n')};`;
+    if (processedNodes.has(fromNodeId) && !processedNodes.has(toNodeId)) {
+      const toNode = nodes[toNodeId];
+      joinClauses.push(`JOIN ${toNode.name} AS ${tableAliases[toNodeId]} ON ${tableAliases[fromNodeId]}.${fromColumnName} = ${tableAliases[toNodeId]}.${toColumnName}`);
+      processedNodes.add(toNodeId);
+    } else if (processedNodes.has(toNodeId) && !processedNodes.has(fromNodeId)) {
+      const fromNode = nodes[fromNodeId];
+      joinClauses.push(`JOIN ${fromNode.name} AS ${tableAliases[fromNodeId]} ON ${tableAliases[toNodeId]}.${toColumnName} = ${tableAliases[fromNodeId]}.${fromColumnName}`);
+      processedNodes.add(fromNodeId);
+    }
+  });
+  
+  const remainingNodes = Object.values(nodes).filter(node => !processedNodes.has(node.id));
+  const crossJoins = remainingNodes.map(node => `${node.name} AS ${tableAliases[node.id]}`);
+
+  const fromAndCrossJoinClause = crossJoins.length > 0 
+    ? `${fromClause}, ${crossJoins.join(', ')}`
+    : fromClause;
+
+  return `${selectClause}\n${fromAndCrossJoinClause}\n${joinClauses.join('\n')};`;
 };
