@@ -123,7 +123,13 @@ const resources = {
         "Send" : "전송",
 
         "confirm_delete_project_message": "<0>{{projectName}}</0> 프로젝트를<1/>정말 삭제하시겠습니까?",
-        "These steps are optional and can be configured later." : "해당 단계는 선택사항으로 추후에 설정이 가능합니다." 
+        "These steps are optional and can be configured later." : "해당 단계는 선택사항으로 추후에 설정이 가능합니다." ,
+        "1:1 Chatting" : "1:1 채팅",
+        "Recent Chatting" : "최근 채팅",
+        "There is no chat history yet." : "아직 채팅 내역이 없습니다.",
+        "Please enter your message" : "메시지를 입력하세요.",
+        "Please select a chatting " : "채팅방을 선택하세요.",
+
         },
     },
     en: {
@@ -245,7 +251,14 @@ const resources = {
         "Send" : "Send",
 
         "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?",
-        "These steps are optional and can be configured later." : "These steps are optional and can be configured later."
+        "These steps are optional and can be configured later." : "These steps are optional and can be configured later.",
+
+        "1:1 Chatting" : "1:1 Chatting",
+        "Recent Chatting" : "Recent Chatting",
+        "There is no chat history yet." : "There is no chat history yet.",
+        "Please enter your message" : "Please enter your message",
+        "Please select a chatting " : "Please select a chatting",
+
         },
     },
 };
