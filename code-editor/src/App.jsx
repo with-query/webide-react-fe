@@ -24,12 +24,18 @@ function App() {
     <Router>
       <Header />
       <Routes>
+        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/ide" element={<Editor />} />
         <Route path="/mypage" element={<MyPage />} />
-        <Route path="/query-builder" element={<Workspace />} />
-        <Route path="/DBConnect" element={<DBConnect />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/DBConnect" element={<DBConnect />} />
+        <Route path="/editor/:projectId" element={<Editor />} />
+        
+        <Route path="/query-builder/:projectId" element={<Workspace />} />
+        <Route path="/query-builder/:projectId/:dbConnectionId" element={<Workspace />} />
+        
+        
+        <Route path="*" element={<div>페이지를 찾을 수 없습니다 (404)</div>} />
       </Routes>
     </Router>
   );
