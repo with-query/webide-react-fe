@@ -4,7 +4,6 @@ import {
   Flex,
   Text,
   Heading,
-  useColorModeValue,
   Badge,
   VStack,
   Modal,
@@ -17,17 +16,20 @@ import {
   Spinner,
   Alert,
   AlertIcon,
+  useToast, // useToast 추가
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
+import axios from "axios"; // axios 임포트
+import { useNavigate } from "react-router-dom"; // useNavigate 임포트
 
 // 모달 컴포넌트 가져오기 (경로가 정확한지 다시 한번 확인하세요)
 import CreateProjectModal from "../components/modals/CreateProjectModal";
 import EditDBConnectionModal from "../components/modals/EditDBConnectionModal";
 
-// mock/mockData.js에서 목업 데이터를 임포트합니다.
-// 실제 경로에 맞게 수정해주세요. 예: '../../mock/mockData' 또는 './mock/mockData'
-import { mockProjects, mockDbConnections } from '../mock/mockData'; // <-- 이 부분을 추가/수정
+// 목업 데이터는 더 이상 필요 없으므로 제거합니다.
+// import { mockProjects, mockDbConnections } from '../mock/mockData';
+
+const BASE_URL = "http://20.196.89.99:8080"; // API BASE_URL 정의
 
 const DBConnect = () => {
   const [projects, setProjects] = useState([]);
@@ -36,36 +38,74 @@ const DBConnect = () => {
   const [error, setError] = useState(null);
 
   const [showProjectListModal, setShowProjectListModal] = useState(false);
-  const [selectedProjectForNewConnection, setSelectedProjectForNewConnection] = useState(null);
+  const [selectedProjectForNewConnection, setSelectedProjectForNewConnection] =
+    useState(null);
   const [isEditDbModalOpen, setIsEditDbModalOpen] = useState(false);
   const [editTargetDb, setEditTargetDb] = useState(null);
 
-  useEffect(() => {
-    // 실제 API 호출 대신 목업 데이터를 사용합니다.
-    // 비동기 처리를 흉내 내기 위해 setTimeout을 사용할 수 있습니다.
-    const fetchData = () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // 목업 데이터를 직접 상태에 설정합니다.
-        setProjects(mockProjects);
-        setDbConnections(mockDbConnections);
-      } catch (err) {
-        console.error("데이터 로드 중 오류 발생:", err);
-        setError("데이터를 로드하는 데 실패했습니다. 다시 시도해주세요.");
-      } finally {
-        setLoading(false);
+  const toast = useToast(); // useToast 훅 초기화
+  const navigate = useNavigate(); // useNavigate 훅 초기화
+
+  // 프로젝트 및 DB 연결 데이터를 가져오는 함수
+  const fetchDBConnectData = async () => {
+    setLoading(true);
+    setError(null);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast({
+        title: "인증 필요",
+        description: "로그인이 필요합니다.",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+      navigate("/login");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const [projectsRes, dbConnectionsRes] = await Promise.all([
+        axios.get(`${BASE_URL}/api/projects`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${BASE_URL}/api/db-connections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const fetchedProjects = projectsRes.data;
+      const fetchedDbConnections = dbConnectionsRes.data;
+
+      setProjects(fetchedProjects);
+      setDbConnections(fetchedDbConnections);
+    } catch (err) {
+      console.error("데이터 로드 중 오류 발생:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        "데이터를 로드하는 데 실패했습니다. 다시 시도해주세요.";
+      setError(errorMessage);
+      toast({
+        title: "데이터 로딩 실패",
+        description: errorMessage,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("token");
+        navigate("/login");
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-    // setTimeout(() => { // 실제 비동기 로딩처럼 보이게 하려면 주석을 풀고 사용
-    //   fetchData();
-    // }, 500); // 0.5초 지연
-  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시 한 번만 실행
-
-  
-
+  useEffect(() => {
+    fetchDBConnectData();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   const statusText = {
     connected: "연결됨",
@@ -73,13 +113,11 @@ const DBConnect = () => {
   };
 
   const getColorByDBType = (type) => {
-    // mockDbConnections의 type 필드 값이 'mysql', 'postgres' 등으로 소문자이므로,
-    // 여기에 대응하도록 case를 수정합니다.
-    switch (type.toLowerCase()) { // 소문자로 변환하여 비교
+    switch (type?.toLowerCase()) {
       case "postgres":
         return "blue.500";
       case "mysql":
-      case "mariadb": // MariaDB도 있다면 추가 가능
+      case "mariadb":
         return "yellow.500";
       case "mongodb":
         return "green.500";
@@ -92,26 +130,70 @@ const DBConnect = () => {
     }
   };
 
+  // JDBC URL에서 DB 정보 파싱
+  const parseJdbcUrl = (url) => {
+    let type = "unknown";
+    let host = "";
+    let port = "";
+    let dbName = "";
+
+    try {
+      if (url.startsWith("jdbc:mysql://")) {
+        type = "mysql";
+        const parts = url.substring("jdbc:mysql://".length).split("/");
+        if (parts.length > 0) {
+          const hostPort = parts[0].split(":");
+          host = hostPort[0];
+          port = hostPort[1] || "3306"; // 기본 MySQL 포트
+        }
+        if (parts.length > 1) {
+          dbName = parts[1].split("?")[0]; // 쿼리 스트링 제거
+        }
+      } else if (url.startsWith("jdbc:postgresql://")) {
+        type = "postgres";
+        const parts = url.substring("jdbc:postgresql://".length).split("/");
+        if (parts.length > 0) {
+          const hostPort = parts[0].split(":");
+          host = hostPort[0];
+          port = hostPort[1] || "5432"; // 기본 PostgreSQL 포트
+        }
+        if (parts.length > 1) {
+          dbName = parts[1].split("?")[0]; // 쿼리 스트링 제거
+        }
+      }
+      // 다른 DB 타입도 여기에 추가 가능
+    } catch (e) {
+      console.error("JDBC URL 파싱 오류:", e);
+    }
+
+    return { type, host, port, dbName };
+  };
+
   // dbList는 projects와 dbConnections 상태를 기반으로 계산되는 파생된 값입니다.
   const dbList = projects
     .map((project) => {
-      // mockDbConnections의 projectId가 숫자로 되어 있으므로, project.id도 숫자로 일치시켜야 합니다.
-      // mockProjects의 id도 숫자이므로 문제가 없습니다.
-      const connection = dbConnections.find((conn) => conn.projectId === project.id);
-      return connection
-        ? {
-            id: connection.id,
-            projectId: project.id,
-            projectName: project.name, // project.name을 사용
-            type: connection.type,
-            host: connection.host,
-            port: connection.port,
-            dbName: connection.database, // mockDbConnections의 'database' 필드를 사용
-            status: "connected", // 현재는 항상 'connected'로 설정
-            color: getColorByDBType(connection.type),
-            role: project.role, // project의 role을 사용
-          }
-        : null;
+      const connection = dbConnections.find(
+        (conn) => conn.projectId === project.id
+      );
+      if (connection) {
+        const { type, host, port, dbName } = parseJdbcUrl(connection.url);
+        return {
+          id: connection.id,
+          projectId: project.id,
+          projectName: project.name,
+          type: type,
+          host: host,
+          port: port,
+          dbName: dbName,
+          status: "connected", // API가 상태를 제공하지 않으므로 기본적으로 'connected'로 설정
+          color: getColorByDBType(type),
+          role: project.role, // 프로젝트에서 role 정보 가져오기
+          username: connection.username,
+          password: connection.password, // 편집 시 필요
+          driverClassName: connection.driverClassName, // 편집 시 필요
+        };
+      }
+      return null;
     })
     .filter(Boolean); // null 값 필터링 (연결되지 않은 프로젝트는 제외)
 
@@ -125,84 +207,211 @@ const DBConnect = () => {
   const handleAddNewDBConnection = async (data) => {
     if (!selectedProjectForNewConnection) return;
 
-    // 새로운 DB 연결 객체 생성 (mockData의 형식에 맞게)
-    const newDBConnection = {
-      id: dbConnections.length > 0 ? Math.max(...dbConnections.map(c => c.id)) + 1 : 1, // 간단한 ID 생성
-      projectId: selectedProjectForNewConnection.id,
-      name: `${data.dbType} ${selectedProjectForNewConnection.name} 연결`, // 새 연결 이름
-      type: data.dbType.toLowerCase(), // 타입은 소문자로 저장
-      host: data.dbConfig.host,
-      port: parseInt(data.dbConfig.port), // 포트는 숫자로 저장
-      username: "user", // 기본값
-      database: data.dbConfig.dbName, // DB 이름
-      // 기타 필드 (schema, searchPath 등)는 필요에 따라 추가
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast({ title: "로그인이 필요합니다.", status: "warning" });
+      navigate("/login");
+      return;
+    }
+
+    let url = "";
+    let driverClassName = "";
+    const projectId = selectedProjectForNewConnection.id;
+    const dbType = data.dbType.toLowerCase(); // mysql, postgres 등
+
+    switch (dbType) {
+      case "mysql":
+        url = `jdbc:mysql://${data.dbConfig.host}:${data.dbConfig.port}/${data.dbConfig.dbName}`;
+        driverClassName = "com.mysql.cj.jdbc.Driver";
+        break;
+      case "postgresql":
+        url = `jdbc:postgresql://${data.dbConfig.host}:${data.dbConfig.port}/${data.dbConfig.dbName}`;
+        driverClassName = "org.postgresql.Driver";
+        break;
+      default:
+        toast({ title: "DB 연결 실패", description: "지원하지 않는 DB 타입입니다.", status: "error" });
+        return;
+    }
+
+    const newDBConnectionPayload = {
+      projectId: projectId,
+      name: `${selectedProjectForNewConnection.name} ${dbType} 연결`, // 이름 생성
+      url: url,
+      username: data.dbConfig.user || data.dbConfig.username,
+      password: data.dbConfig.password,
+      driverClassName: driverClassName,
     };
 
     try {
-      console.log("새 DB 연결 추가 (목업):", newDBConnection);
-      // 실제 API 호출 대신 상태 업데이트
-      setDbConnections((prev) => [...prev, newDBConnection]);
+      console.log("새 DB 연결 API 요청 데이터:", newDBConnectionPayload);
+      const res = await axios.post(
+        `${BASE_URL}/api/db-connections`,
+        newDBConnectionPayload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const createdConnection = res.data;
+
+      // 상태 업데이트 및 UI 리프레시 (전체 데이터를 다시 가져오는 것이 가장 간단)
+      await fetchDBConnectData(); // 새로운 연결이 추가되었으므로 데이터 다시 가져오기
 
       setSelectedProjectForNewConnection(null);
+      toast({
+        title: "새 DB 연결 추가 완료",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       console.error("새 DB 연결 추가 실패:", err);
-      alert("새 DB 연결 추가에 실패했습니다. 다시 시도해주세요.");
+      const errorMessage =
+        err.response?.data?.message || "새 DB 연결 추가에 실패했습니다.";
+      toast({
+        title: "DB 연결 실패",
+        description: errorMessage,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   // 편집 버튼 클릭 핸들러
   const handleEditDbConnection = (db) => {
-    if (db.role !== "OWNER") {
-      alert("프로젝트 소유자만 DB 연결을 편집할 수 있습니다.");
-      return;
-    }
-    // 편집 모달에 전달할 데이터 형식 맞추기:
-    // dbName을 database 필드로 넘겨야 EditDBConnectionModal이 제대로 받을 수 있습니다.
-    setEditTargetDb({ ...db, database: db.dbName });
+    // dbList에서 가져온 db 객체에는 이미 host, port, dbName, type이 파싱되어 있습니다.
+    // EditDBConnectionModal은 dbType, host, port, dbName, username, password를 기대합니다.
+    // 따라서 editTargetDb에 이 값들을 직접 전달합니다.
+    setEditTargetDb({
+      id: db.id,
+      projectId: db.projectId,
+      projectName: db.projectName,
+      dbType: db.type, // parseJdbcUrl에서 가져온 type 사용
+      host: db.host,
+      port: db.port,
+      dbName: db.dbName,
+      username: db.username,
+      password: db.password, // 실제 비밀번호는 보안상 여기서는 빈 값으로 시작할 수 있습니다.
+      driverClassName: db.driverClassName,
+    });
     setIsEditDbModalOpen(true);
   };
 
   // DB 연결 편집 저장 핸들러
   const handleSaveEditedDb = async (updatedDb) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast({ title: "로그인이 필요합니다.", status: "warning" });
+      navigate("/login");
+      return;
+    }
+
+    let url = "";
+    let driverClassName = "";
+    const dbType = updatedDb.dbType.toLowerCase();
+
+    switch (dbType) {
+      case "mysql":
+        url = `jdbc:mysql://${updatedDb.host}:${updatedDb.port}/${updatedDb.dbName}`;
+        driverClassName = "com.mysql.cj.jdbc.Driver";
+        break;
+      case "postgresql":
+        url = `jdbc:postgresql://${updatedDb.host}:${updatedDb.port}/${updatedDb.dbName}`;
+        driverClassName = "org.postgresql.Driver";
+        break;
+      default:
+        toast({ title: "DB 연결 실패", description: "지원하지 않는 DB 타입입니다.", status: "error" });
+        return;
+    }
+
+    const updatedDBConnectionPayload = {
+      name: `${updatedDb.projectName} ${dbType} 연결`, // 이름 재구성
+      url: url,
+      username: updatedDb.username,
+      password: updatedDb.password, // 변경된 비밀번호를 보냅니다.
+      driverClassName: driverClassName,
+      projectId: updatedDb.projectId,
+      // createdById는 API에서 알아서 처리할 것이므로 제외
+    };
+
     try {
-      // 업데이트된 DB 연결 객체 생성 (mockData의 형식에 맞게)
-      const updatedMockDbConnection = {
-        ...updatedDb,
-        type: updatedDb.dbType.toLowerCase(), // 타입은 소문자로
-        port: parseInt(updatedDb.port),      // 포트는 숫자로
-        database: updatedDb.dbName,          // dbName을 database 필드로 저장
-      };
-      delete updatedMockDbConnection.dbType; // 더 이상 필요 없는 필드는 제거
-      delete updatedMockDbConnection.dbName;
-
-      console.log("DB 연결 편집 (목업):", updatedMockDbConnection);
-
-      // 실제 API 호출 대신 상태 업데이트
-      setDbConnections((prev) =>
-        prev.map((conn) => (conn.id === updatedMockDbConnection.id ? updatedMockDbConnection : conn))
+      console.log("DB 연결 편집 API 요청 데이터:", updatedDBConnectionPayload);
+      await axios.put(
+        `${BASE_URL}/api/db-connections/${updatedDb.id}`, // PUT 요청에 ID 포함
+        updatedDBConnectionPayload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
+
+      // 상태 업데이트 및 UI 리프레시
+      await fetchDBConnectData();
 
       setIsEditDbModalOpen(false);
       setEditTargetDb(null);
+      toast({
+        title: "DB 연결 편집 완료",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       console.error("DB 연결 편집 실패:", err);
-      alert("DB 연결 편집에 실패했습니다. 다시 시도해주세요.");
+      const errorMessage =
+        err.response?.data?.message || "DB 연결 편집에 실패했습니다.";
+      toast({
+        title: "DB 연결 편집 실패",
+        description: errorMessage,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   // 삭제 버튼 클릭 핸들러
-  const handleDeleteDbConnection = async (dbId) => {
-    if (!window.confirm("정말로 이 DB 연결을 삭제하시겠습니까?")) {
+  const handleDeleteDbConnection = async (dbId, projectName) => {
+    if (
+      !window.confirm(
+        `프로젝트 '${projectName}'의 DB 연결을 정말로 삭제하시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast({ title: "로그인이 필요합니다.", status: "warning" });
+      navigate("/login");
       return;
     }
 
     try {
-      console.log(`DB 연결 삭제 (목업): ${dbId}`);
-      // 실제 API 호출 대신 상태 업데이트
-      setDbConnections((prev) => prev.filter((conn) => conn.id !== dbId));
+      console.log(`DB 연결 삭제 API 호출: ${dbId}`);
+      await axios.delete(`${BASE_URL}/api/db-connections/${dbId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 상태 업데이트 및 UI 리프레시
+      await fetchDBConnectData();
+
+      toast({
+        title: "DB 연결 삭제 완료",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       console.error("DB 연결 삭제 실패:", err);
-      alert("DB 연결 삭제에 실패했습니다. 다시 시도해주세요.");
+      const errorMessage =
+        err.response?.data?.message || "DB 연결 삭제에 실패했습니다.";
+      toast({
+        title: "DB 연결 삭제 실패",
+        description: errorMessage,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -230,23 +439,35 @@ const DBConnect = () => {
     <Box p={6} minHeight="90vh" bg="brand.100" color="text.primary">
       <Flex justify="space-between" align="center" mb={4}>
         <Heading size="md">데이터베이스 연결 관리</Heading>
-        <Button colorScheme="orange" onClick={() => setShowProjectListModal(true)}>
+        <Button
+          colorScheme="orange"
+          onClick={() => setShowProjectListModal(true)}
+        >
           + 새 연결 추가
         </Button>
 
         {/* 연결할 프로젝트 선택 모달 */}
-        <Modal isOpen={showProjectListModal} onClose={() => setShowProjectListModal(false)}>
+        <Modal
+          isOpen={showProjectListModal}
+          onClose={() => setShowProjectListModal(false)}
+        >
           <ModalOverlay />
           <ModalContent>
             <ModalHeader>연결할 프로젝트 선택</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               {/* 이미 연결된 프로젝트는 리스트에서 제외 */}
-              {projects.filter((p) => !dbList.some((db) => db.projectId === p.id)).length > 0 ? (
+              {projects.filter((p) => !dbList.some((db) => db.projectId === p.id))
+                .length > 0 ? (
                 projects
                   .filter((p) => !dbList.some((db) => db.projectId === p.id))
                   .map((proj) => (
-                    <Button key={proj.id} w="100%" mb={2} onClick={() => handleSelectProjectForNewConnection(proj)}>
+                    <Button
+                      key={proj.id}
+                      w="100%"
+                      mb={2}
+                      onClick={() => handleSelectProjectForNewConnection(proj)}
+                    >
                       {proj.name} ({proj.role})
                     </Button>
                   ))
@@ -265,6 +486,8 @@ const DBConnect = () => {
             onNext={handleAddNewDBConnection}
             skipStep1={true}
             presetProjectName={selectedProjectForNewConnection.name}
+            // CreateProjectModal에 dbConnection step만 보여주도록 프롭스 추가
+            forceDbConnectionStep={true}
           />
         )}
       </Flex>
@@ -275,24 +498,30 @@ const DBConnect = () => {
           <Text>연결된 데이터베이스가 없습니다. 새 연결을 추가해보세요.</Text>
         ) : (
           dbList.map((db) => (
-            <Box key={db.id} p={4} borderWidth="1px" borderRadius="md" w="300px" bg="white">
+            <Box
+              key={db.id}
+              p={4}
+              borderWidth="1px"
+              borderRadius="md"
+              w="300px"
+              bg="white"
+            >
               <Flex justify="space-between" align="center" mb={2}>
                 <Flex align="center" gap={2}>
                   <Box w={4} h={4} bg={db.color} borderRadius="sm" />
                   <Text fontWeight="bold">{db.projectName}</Text>
                   {db.role && (
-                    <Badge ml={1} colorScheme={db.role === "OWNER" ? "purple" : "blue"}>
+                    <Badge
+                      ml={1}
+                      colorScheme={db.role === "OWNER" ? "purple" : "blue"}
+                    >
                       {db.role}
                     </Badge>
                   )}
-                    <Badge colorScheme={db.status === "connected" ? "green" : "red"}>
-                  {statusText[db.status]}
-                </Badge>
-                  
+                  <Badge colorScheme={db.status === "connected" ? "green" : "red"}>
+                    {statusText[db.status]}
+                  </Badge>
                 </Flex>
-                {/*<Badge colorScheme={db.status === "connected" ? "green" : "red"}>
-                  {statusText[db.status]}
-                </Badge>*/}
               </Flex>
 
               <Text fontSize="sm" color="gray.500" mb={2}>
@@ -311,7 +540,12 @@ const DBConnect = () => {
                     <Button size="sm" colorScheme="yellow">
                       재연결
                     </Button>
-                    <Button size="sm" colorScheme="red" variant="ghost">
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      variant="ghost"
+                      onClick={() => handleDeleteDbConnection(db.id, db.projectName)}
+                    >
                       삭제
                     </Button>
                   </>
@@ -330,7 +564,7 @@ const DBConnect = () => {
                       size="sm"
                       colorScheme="red"
                       variant="ghost"
-                      onClick={() => handleDeleteDbConnection(db.id)}
+                      onClick={() => handleDeleteDbConnection(db.id, db.projectName)}
                     >
                       삭제
                     </Button>

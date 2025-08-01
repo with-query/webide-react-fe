@@ -9,7 +9,7 @@ import axios from "axios";
 const CreateProjectModal = ({
   isOpen,
   onClose,
-  onCreateProject, // prop 이름을 onCreateProject로 변경
+  onNext,
   skipStep1 = false,
   presetProjectName = "",
 }) => {
@@ -179,8 +179,6 @@ const CreateProjectModal = ({
     setIsTesting(true);
     setTestResult(null); // --- 백엔드 연결 테스트 API 호출 (주석 해제 및 BASE_URL 설정 필요) ---
 
-    // 실제 백엔드 API 호출 로직은 여기에 구현
-    // 현재는 setTimeout으로 모의 테스트를 진행합니다.
     setTimeout(() => {
             console.log("백엔드 API 문제로 인해 연결 테스트를 임시로 성공으로 간주합니다.");
             setTestResult("success"); // 강제로 성공 처리
