@@ -45,9 +45,6 @@ const Header = () => {
         setLang(newLang);
     };
 
-
-
-
    const [notifications, setNotifications] = useState([
     { id: 1, projectName: "프로젝트 A", message: "프로젝트 A에서 초대가 왔습니다." },
   ]);
@@ -71,7 +68,6 @@ const Header = () => {
   };
 
 
-
     // 현재 경로 기반으로 active 상태 결정
     const isActive = (path) => location.pathname.startsWith(path);
 
@@ -84,7 +80,7 @@ const Header = () => {
   console.log("notifications.length:", notifications.length);
 
   return (
-    <Box borderBottom="1px solid" borderColor="gray.200" bg="white" px={4} py={2}>
+    <Box borderBottom="1px solid" borderColor="gray.200" bg="white" px={4} py={2} >
         <Flex align="center">
             {/* 로고 */}
             <HStack spacing={2}>
@@ -103,14 +99,38 @@ const Header = () => {
 
 
             {/* 탭 (쿼리 빌더 / 설정) */}
-            <HStack spacing={6} ml={8}>
+            <HStack spacing={6} ml={8} >
+                <NavLink to="/dashboard">
+                    <Text
+                        cursor="pointer"
+                        color={isActive("/dashboard") ? "orange.500" : "gray.600"}
+                        borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
+                        fontWeight="medium"
+                        
+                    >
+                    {t("Dashboard")}
+                    </Text>
+                </NavLink>
+
+                <NavLink to="/ide">
+                    <Text
+                    cursor="pointer"
+                    color={isActive("/ide") ? "orange.500" : "gray.600"}
+                    borderBottom={isActive("/ide") ? "2px solid orange" : "2px solid transparent"}
+                    fontWeight="medium"
+                    
+                    >
+                    {t("IDE")}
+                    </Text>
+                </NavLink>
+
                 <NavLink to="/query-builder">
                     <Text
                         fontWeight="medium"
                         cursor="pointer"
-                        borderBottom={isActive("/query-builder") ? "2px solid orange" : "none"}
+                        borderBottom={isActive("/query-builder") ? "2px solid orange" : "2px solid transparent"}
                         color={isActive("/query-builder") ? "orange.500" : "gray.600"}
-                        pb={1}
+                       
                     >
                     {t("Query Builder")}
                     </Text>
@@ -120,33 +140,23 @@ const Header = () => {
                     <Text
                         fontWeight="medium"
                         cursor="pointer"
-                        borderBottom={isActive("/DBConnect") ? "2px solid orange" : "none"}
+                        borderBottom={isActive("/DBConnect") ? "2px solid orange" : "2px solid transparent"}
                         color={isActive("/DBConnect") ? "orange.500" : "gray.600"}
-                        pb={1}
+                        
                     >
                     {t("DBConnect")}
                     </Text>
                 </NavLink>
 
-                <NavLink to="/ide">
-                    <Text
-                    cursor="pointer"
-                    color={isActive("/ide") ? "orange.500" : "gray.600"}
-                    borderBottom={isActive("/ide") ? "2px solid orange" : "none"}
-                    fontWeight="medium"
-                    >
-                    {t("IDE")}
-                    </Text>
-                </NavLink>
-
-                <NavLink to="/dashboard">
+                <NavLink to="/chat">
                     <Text
                         cursor="pointer"
-                        color={isActive("/dashboard") ? "orange.500" : "gray.600"}
-                        borderBottom={isActive("/dashboard") ? "2px solid orange" : "none"}
+                        color={isActive("/chat") ? "orange.500" : "gray.600"}
+                        borderBottom={isActive("/chat") ? "2px solid orange" : "2px solid transparent"}
                         fontWeight="medium"
+                       
                     >
-                    {t("Dashboard")}
+                    {t("Chat")}
                     </Text>
                 </NavLink>
             </HStack>
@@ -154,43 +164,35 @@ const Header = () => {
             <Spacer />
 
           
-            <HStack spacing={4} ml={6}>
-                <Button size="sm" variant="outline"
+            <HStack spacing={4} mx={3}>    
+                <Button size="sm" variant="outline" mx="10px"
                     color="gray.600"
                     fontWeight="medium"
                     onClick={toggleLang}>
                     {lang.toUpperCase()}
                 </Button>
-                
-
-                
-
-                <NavLink to="/chat">
-                    <Text
-                        cursor="pointer"
-                        color={isActive("/chat") ? "orange.500" : "gray.600"}
-                        borderBottom={isActive("/chat") ? "2px solid orange" : "none"}
-                        fontWeight="medium"
-                    >
-                    {t("Chat")}
-                    </Text>
-                </NavLink>
             </HStack>
 
-
+            
             <Menu>
                 <MenuButton as={IconButton} icon={
                 <Box position="relative" >
                     <FiBell size={22} color="black"/>
                     {notifications.length > 0 && (
                     <Badge 
-                        bg="#E53E3E"
+                        bg="#d57239"
                         borderRadius="full" 
                         position="absolute" 
                         top="-1" 
                         right="-1" 
                         px="1" 
-                        fontSize="0.6em" 
+                        fontSize="0.6em"
+                        color="white"
+                        width="14px"
+                        height="14px"
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center" 
                      >{notifications.length}
                     </Badge>
                     )}
@@ -223,10 +225,9 @@ const Header = () => {
                 onDecline={handleDecline}
             />
 
-
-
             
             <Flex justify="flex-end" p={4}>
+                
                 <Menu>
                     <MenuButton
                         as={IconButton}

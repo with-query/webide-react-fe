@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { Box, Button, Flex, Spinner } from "@chakra-ui/react";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-sql"; // SQL 문법 하이라이트용
@@ -10,18 +10,13 @@ import {DownloadIcon, LinkIcon } from '@chakra-ui/icons';
 
 
 
-const CodeEditor = ({ sql, setSql }) => {
+const CodeEditor = ({ sql, setSql, onRunQuery, isExecuting  }) => {
   const { t } = useTranslation();
-
-  const handleRun = () => {
-    console.log("쿼리 실행:", sql);
-  };
-  
 
   return (
     <Box flex="1" p={4} height="100%" display="flex" flexDirection="column" bg="brand.100" borderRadius="md" boxShadow="sm">
       <Flex justify="flex-end" gap={2} mb={2}>
-        <Button  colorScheme="orange" size="sm" onClick={handleRun}>
+        <Button  colorScheme="orange" size="sm" onClick={onRunQuery} isLoading={isExecuting} leftIcon={isExecuting ? <Spinner size="xs" /> : undefined}>
           ▶ {t("Run")}
         </Button>
         <Button leftIcon={<DownloadIcon />} colorScheme="orange" size="sm">
