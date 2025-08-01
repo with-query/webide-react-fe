@@ -72,8 +72,11 @@ const Header = () => {
     const isActive = (path) => location.pathname.startsWith(path);
 
     const handleLogout = () => {
-    setIsLoggedIn(false);
-    // 필요하면 localStorage 초기화도
+   
+        localStorage.removeItem("token");  
+        setIsLoggedIn(false);             
+  //setUser(null);                    
+
   };
 
   console.log("현재 notifications 배열:", notifications);

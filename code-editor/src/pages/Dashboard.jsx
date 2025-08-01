@@ -4,7 +4,7 @@ import { Box, Grid, useDisclosure } from "@chakra-ui/react";
 import { v4 as uuidv4 } from "uuid"; // uuid 추가
 
 import { mockProjects, mockUser, mockDbConnections, mockDbSchemas } from "@/mock/mockData";
-//import axios from "axios";
+import axios from "axios";
 
 import "../styles/dashboard.css";
 import BoltIcon from "@/components/icons/BoltIcon";
@@ -55,6 +55,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const { t } = useTranslation();
+    const BASE_URL = "http://20.196.89.99:8080";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,6 +136,33 @@ const Dashboard = () => {
     fetchProjectStatus();
   }, [selectedProjectId, projects, dbConnections]); // dbConnections를 의존성 배열에 추가
 
+  
+    useEffect(() => {
+  const fetchUser = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data); // 여기서 data에 name, email, nickname, profileUrl 등이 들어 있다고 가정
+      } else {
+        console.error("유저 정보 불러오기 실패");
+      }
+    } catch (err) {
+      console.error("유저 정보 요청 중 오류:", err);
+    }
+  };
+
+  fetchUser();
+}, []);
+
   useEffect(() => {
     // 바깥 클릭을 감지하는 함수
     const handleClickOutside = (event) => {
@@ -142,6 +170,7 @@ const Dashboard = () => {
         setActiveDropdownId(null); // 메뉴를 닫습니다.
       }
     };
+
 
     if (activeDropdownId !== null) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -313,22 +342,24 @@ const Dashboard = () => {
             <div className="user-card">
               {user ? (
                 <>
-                  <div
+                    <div
                     className="user-profile-container clickable"
                     onClick={handleUserProfileClick}
                     role="button"
                     tabIndex={0}
-                  >
-                    {user?.profileUrl?.trim() ? (
-                      <img className="user-profile" src={user.profileUrl} alt="프로필" />
+                    >
+                    {user.profileUrl?.trim() ? (
+                        <img className="user-profile" src={user.profileUrl} alt="프로필" />
                     ) : (
-                      <UserProfileIcon className="user-profile-icon" />
+                        <div className="user-initial">{user.nickname?.[0] || "U"}</div>
                     )}
-                  </div>
-                  <p className="user-name">{user.name}</p>
-                  <p className="user-email">{user.email}</p>
+                    </div>
+                    <div className="user-info">
+                    <div>{user.name || user.nickname}</div>
+                    <div>{user.email}</div>
+                    </div>
                 </>
-              ) : (
+                ): (
                 <>
                   <div className="user-profile-container">
                     <UserProfileIcon className="user-profile-icon" />
@@ -401,7 +432,8 @@ const Dashboard = () => {
               </div>
               <div className="status-list">
                 <div className="status-item">
-                  <FileIcon className="status-item-icon file" />
+                    <FolderIcon className="status-item-icon file" />
+                  {/*<FileIcon className="status-item-icon file" />*/}
                   <p className="status-item-title">{t("Total number of projects")}</p>
                   <p className="status-item-value">{projectCount}</p>
                 </div>
