@@ -9,6 +9,7 @@
   font-size: 26px;
   font-weight: 1000;
   margin-bottom: 20px;
+  color: #333;
 }
 
 .projects {
@@ -29,6 +30,7 @@
   align-items: center;
   gap: 8px;
   font-weight: bold;
+  color: #333;
 }
 
 .folder-icon {
@@ -44,7 +46,7 @@
   align-items: center;
   text-align: center;
   padding: 48px 0;
-  color: #888;
+  color: #666;
 }
 
 .projects-empty-wrapper {
@@ -61,7 +63,7 @@
   height: 48px;
   opacity: 0.5;
   margin-bottom: 16px;
-  color: #9999;
+  color: #666;
 }
 
 .create-project-btn {
@@ -75,7 +77,7 @@
 }
 
 .create-project-btn:hover {
-  background-color: #d57239;
+  background-color: #e5793a;
 }
 
 .projects-list {
@@ -90,10 +92,11 @@
   justify-content: space-between;
   position: relative;
   padding: 12px 16px;
-  border: 1px solid #eee;
+  border: 1px solid #e1dfdf;
   border-radius: 8px;
   margin-bottom: 8px;
   cursor: pointer;
+  background-color: white;
 }
 
 .project-card-content {
@@ -122,19 +125,18 @@
 
 .project-card-dates {
   display: flex;
-  gap: 16px; /* 날짜 사이 간격 */
+  gap: 16px;
   font-size: 12px;
-  color: #999;
+  color: #666;
 }
 
 .more-icon-button {
-  /* 아이콘 버튼이 컨텐츠에 밀려나지 않도록 flex-shrink 설정 */
   flex-shrink: 0;
   margin-left: 16px;
 }
 
 .project-card:hover {
-  background-color: #f4f1ed;
+  background-color: #f2f2f2;
 }
 
 .more-icon {
@@ -158,12 +160,12 @@
   top: 100%;
   right: 0;
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid #e1dfdf;
   border-radius: 6px;
   list-style: none;
   padding: 8px 0;
   width: 150px;
-  box-shadow: 0 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
@@ -173,6 +175,7 @@
   padding: 8px 16px;
   width: 130px;
   cursor: pointer;
+  color: #333;
 }
 
 .project-dropdown li:hover {
@@ -243,10 +246,11 @@
 
 .user-name {
   font-weight: bold;
+  color: #333;
 }
 
 .user-email {
-  color: #999;
+  color: #666;
   font-size: 14px;
 }
 
@@ -254,10 +258,11 @@
   font-size: 17px;
   font-weight: bold;
   margin-bottom: 4px;
+  color: #333;
 }
 
 .login-desc {
-  color: #888;
+  color: #666;
   font-size: 14px;
   font-weight: 400;
   margin-bottom: 15px;
@@ -280,6 +285,10 @@
   cursor: pointer;
 }
 
+.sign-in-btn:hover {
+  background-color: #e5793a;
+}
+
 .sign-up-btn {
   background-color: white;
   color: #d57239;
@@ -287,6 +296,10 @@
   padding: 10px 18px;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.sign-up-btn:hover {
+  background-color: #f2f2f2;
 }
 
 .quick-actions {
@@ -303,6 +316,7 @@
   gap: 8px;
   font-weight: bold;
   margin-bottom: 12px;
+  color: #333;
 }
 
 .quick-actions-icon {
@@ -337,22 +351,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #eee;
+  border: 1px solid #e1dfdf;
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 10px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  background-color: white;
 }
 
 .quick-action-item:hover {
-  background-color: #f4f1ed;
+  background-color: #f2f2f2;
 }
 
 .quick-action-title {
   flex: 1;
   margin-left: 10px;
   font-weight: 400;
+  color: #333;
 }
 
 .status {
@@ -368,21 +384,29 @@
   gap: 8px;
   font-weight: bold;
   margin-bottom: 12px;
+  color: #333;
 }
 
 .status-icon {
   width: 21px;
   height: 21px;
-  color: #d57239;;
+  color: #d57239;
 }
 
 .project-selector {
   width: 100%;
   padding: 8px 12px;
   margin-bottom: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid #cab8ae;
   border-radius: 6px;
   font-size: 14px;
+  background-color: white;
+  color: #333;
+}
+
+.project-selector:focus {
+  border-color: #e1dfdf;;
+  outline: none;
 }
 
 .status-dropdown {
@@ -396,7 +420,7 @@
   background: none;
   border: none;
   padding: 8px 12px;
-  color: black;
+  color: #333;
   cursor: pointer;
   font-weight: 600;
 }
@@ -405,8 +429,9 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background: #fff;
+  background: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e1dfdf;
   border-radius: 6px;
   overflow: hidden;
   min-width: 180px;
@@ -417,17 +442,13 @@
   padding: 10px 14px;
   cursor: pointer;
   transition: background 0.2s;
+  color: #333;
 }
 
 .status-dropdown-menu li:hover {
   background-color: #f2f2f2;
 }
 
-/* .status-dropdown:hover .status-dropdown-menu {
-  display: block;
-} */
-
-/* 현황 리스트 */
 .status-list {
   display: flex;
   flex-direction: column;
@@ -437,22 +458,23 @@
 .status-item {
   display: flex;
   align-items: center;
-  border: 1px solid #eee;
+  border: 1px solid #e1dfdf;
   border-radius: 8px;
   padding: 12px 16px;
+  background-color: white;
 }
 
 .status-item-icon {
   width: 21px;
   height: 21px;
   margin-right: 12px;
-  color: #d57239;;
+  color: #d57239;
 }
 
- .table {
-    width: 19px;
-    height: 19px;
-  }
+.table {
+  width: 19px;
+  height: 19px;
+}
 
 .status-item-title {
   flex: 1;
@@ -462,10 +484,8 @@
 
 .status-item-value {
   font-weight: bold;
-  color: #d57239;;
+  color: #d57239;
 }
-
-  
 
 @media (max-width: 1060px) {
   .dashboard-layout {
