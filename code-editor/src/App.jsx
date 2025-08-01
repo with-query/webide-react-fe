@@ -12,7 +12,7 @@ import Header from "./components/layout/Header";
 //import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
-//import Chat from "./pages/Chat";
+import Chat from "./pages/Chat";
 import MyPage from "./pages/MyPage";
 import Workspace from "./pages/Workspace/Workspace";
 import DBConnect from "./pages/DBConnect";
@@ -29,6 +29,7 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/query-builder" element={<Workspace />} />
         <Route path="/DBConnect" element={<DBConnect />} />
+        <Route path="/chat" element={<Chat />} />
       </Routes>
     </Router>
   );

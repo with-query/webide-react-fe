@@ -7,8 +7,17 @@ import {
   useColorModeValue,
   Badge,
   VStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+
 } from "@chakra-ui/react";
 import { useState } from "react";
+import ConnectDBModal from "../components/modals/ConnectDBModal";
 
 const dummyDBList = [
   {
@@ -42,6 +51,13 @@ const dummyDBList = [
 
 const DBConnect = () => {
   const [dbList] = useState(dummyDBList);
+  const [showProjectList, setShowProjectList] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const disconnectedProjects = [
+    { id: 1, name: "Project A" },
+    { id: 2, name: "Project B" },
+  ];
 
   const statusText = {
     connected: "연결됨",
@@ -52,7 +68,38 @@ const DBConnect = () => {
     <Box p={6} height="90vh" bg="brand.100" color="text.primary">
       <Flex justify="space-between" align="center" mb={4}>
         <Heading size="md">데이터베이스 연결 관리</Heading>
-        <Button colorScheme="orange">+ 새 연결 추가</Button>
+        <Button colorScheme="orange"  onClick={() => setShowProjectList(true)}>+ 새 연결 추가</Button>
+        <Modal isOpen={showProjectList} onClose={() => setShowProjectList(false)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>연결할 프로젝트 선택</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {disconnectedProjects.map((proj) => (
+                <Button
+                  key={proj.id}
+                  w="100%"
+                  mb={2}
+                  onClick={() => {
+                    setSelectedProject(proj);
+                    setShowProjectList(false);
+                  }}
+                >
+                  {proj.name}
+                </Button>
+              ))}
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+
+        {/* DB 연결 모달 */}
+        {selectedProject && (
+          <ConnectDBModal
+            project={selectedProject}
+            isOpen={!!selectedProject}
+            onClose={() => setSelectedProject(null)}
+          />
+        )}
       </Flex>
 
       <Flex gap={4} flexWrap="wrap">

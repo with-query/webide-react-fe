@@ -12,6 +12,7 @@ import {
     MenuList,
     MenuItem,
     Avatar,
+    Badge,
 } from "@chakra-ui/react";
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavLink, useLocation } from "react-router-dom";
@@ -23,6 +24,8 @@ import ForgotPasswordModal from "../modals/ForgotPasswordModal";
 
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { FiBell } from "react-icons/fi";
+import InvitationModal from "../modals/InvitationModal";
 
 const Header = () => {
     const location = useLocation();
@@ -42,6 +45,33 @@ const Header = () => {
         setLang(newLang);
     };
 
+
+
+
+   const [notifications, setNotifications] = useState([
+    { id: 1, projectName: "프로젝트 A", message: "프로젝트 A에서 초대가 왔습니다." },
+  ]);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [isInviteModalOpen, setInviteModalOpen] = useState(false);
+
+  const handleClickNotification = (noti) => {
+    setSelectedNotification(noti);
+    setInviteModalOpen(true);
+  };
+
+  const handleAccept = () => {
+    // 수락 처리 (예: InviteMemberModal 연동 또는 상태 업데이트)
+    setNotifications((prev) => prev.filter((n) => n.id !== selectedNotification.id));
+    setInviteModalOpen(false);
+  };
+
+  const handleDecline = () => {
+    setNotifications((prev) => prev.filter((n) => n.id !== selectedNotification.id));
+    setInviteModalOpen(false);
+  };
+
+
+
     // 현재 경로 기반으로 active 상태 결정
     const isActive = (path) => location.pathname.startsWith(path);
 
@@ -49,6 +79,9 @@ const Header = () => {
     setIsLoggedIn(false);
     // 필요하면 localStorage 초기화도
   };
+
+  console.log("현재 notifications 배열:", notifications);
+  console.log("notifications.length:", notifications.length);
 
   return (
     <Box borderBottom="1px solid" borderColor="gray.200" bg="white" px={4} py={2}>
@@ -120,7 +153,7 @@ const Header = () => {
 
             <Spacer />
 
-            {/* 네비게이션 메뉴 (대시보드, IDE, 채팅) */}
+          
             <HStack spacing={4} ml={6}>
                 <Button size="sm" variant="outline"
                     color="gray.600"
@@ -144,7 +177,55 @@ const Header = () => {
                 </NavLink>
             </HStack>
 
-            {/* 사용자 프로필 */}
+
+            <Menu>
+                <MenuButton as={IconButton} icon={
+                <Box position="relative" >
+                    <FiBell size={22} color="black"/>
+                    {notifications.length > 0 && (
+                    <Badge 
+                        bg="#E53E3E"
+                        borderRadius="full" 
+                        position="absolute" 
+                        top="-1" 
+                        right="-1" 
+                        px="1" 
+                        fontSize="0.6em" 
+                     >{notifications.length}
+                    </Badge>
+                    )}
+                </Box>
+                } 
+                variant="ghost" // 배경 없애기
+                bg="transparent"
+                _hover={{ bg: 'transparent' }}
+                _active={{ bg: 'transparent' }} 
+                />
+                <MenuList zIndex={1000}>
+                {notifications.length > 0 ? (
+                    notifications.map((noti) => (
+                    <MenuItem key={noti.id} onClick={() => handleClickNotification(noti)}>
+                        {noti.message}
+                    </MenuItem>
+                    ))
+                ) : (
+                    <MenuItem disabled>새 알림이 없습니다</MenuItem>
+                )}
+                </MenuList>
+            </Menu>
+
+            {/* 알림 클릭 시 뜨는 모달 */}
+            <InvitationModal
+                isOpen={isInviteModalOpen}
+                onClose={() => setInviteModalOpen(false)}
+                notification={selectedNotification}
+                onAccept={handleAccept}
+                onDecline={handleDecline}
+            />
+
+
+
+            
             <Flex justify="flex-end" p={4}>
                 <Menu>
                     <MenuButton
