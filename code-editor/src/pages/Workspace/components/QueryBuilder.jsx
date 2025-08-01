@@ -64,6 +64,8 @@ const QueryBuilder = ({ setSqlQuery }) => {
   const columnRefs = useRef({});
   const nodeRefs = useRef({});
 
+  const [whereClauses, setWhereClauses] = useState([]);
+
   const setColumnRef = (nodeId, columnName, el) => {
     if (!columnRefs.current[nodeId]) columnRefs.current[nodeId] = {};
     columnRefs.current[nodeId][columnName] = el;
@@ -73,9 +75,9 @@ const QueryBuilder = ({ setSqlQuery }) => {
   };
 
   const updateQuery = useCallback(() => {
-    const sql = generateSql(nodes, connections);
+    const sql = generateSql(nodes, connections, whereClauses); // 인자 추가
     setSqlQuery(sql);
-  }, [nodes, connections, setSqlQuery]);
+  }, [nodes, connections, whereClauses, setSqlQuery]);
 
   useEffect(updateQuery, [nodes, connections, updateQuery]);
 

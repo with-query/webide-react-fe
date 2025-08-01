@@ -1,6 +1,6 @@
 // src/components/utils/sqlGenerator.js
 
-export const generateSql = (nodes, connections) => {
+export const generateSql = (nodes, connections, whereClauses) => {
   if (Object.keys(nodes).length === 0) {
     return "/* 테이블을 캔버스로 드래그하세요. */";
   }
@@ -50,5 +50,26 @@ export const generateSql = (nodes, connections) => {
     ? `${fromClause}, ${crossJoins.join(', ')}`
     : fromClause;
 
-  return `${selectClause}\n${fromAndCrossJoinClause}\n${joinClauses.join('\n')};`;
+  let whereString = '';
+  
+  if (whereClauses && whereClauses.length > 0) {
+    // 따옴표 처리를 위한 간단한 헬퍼
+    const quoteValue = (value) => {
+      if (!isNaN(value) || value.toUpperCase() === 'NULL') {
+        return value;
+      }
+      return `'${value}'`;
+    };
+
+    whereString = '\nWHERE ' + whereClauses.map((clause, index) => {
+      const condition = `${clause.column} ${clause.operator} ${quoteValue(clause.value)}`;
+      if (index === 0) {
+        return condition;
+      }
+      return `${clause.connector} ${condition}`;
+    }).join('\n  ');
+  }
+
+  // 최종 SQL 조합
+  return `${selectClause}\n${fromAndCrossJoinClause}\n${joinClauses.join('\n')}${whereString};`;
 };
