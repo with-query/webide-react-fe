@@ -129,6 +129,7 @@ const resources = {
         "There is no chat history yet." : "아직 채팅 내역이 없습니다.",
         "Please enter your message" : "메시지를 입력하세요.",
         "Please select a chatting " : "채팅방을 선택하세요.",
+        "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." : "비밀번호는 최소 10자 이상이어야 하며 대문자, 소문자, 숫자, 특수문자를 1가지 이상 포함해야 합니다.",
 
         },
     },
@@ -258,6 +259,7 @@ const resources = {
         "There is no chat history yet." : "There is no chat history yet.",
         "Please enter your message" : "Please enter your message",
         "Please select a chatting " : "Please select a chatting",
+        "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." : "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." 
 
         },
     },
