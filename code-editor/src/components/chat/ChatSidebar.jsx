@@ -20,30 +20,32 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
     <Box width="300px" bg="white" borderRight="1px solid #e2e2e2" p="4">
       <Heading size="md" mb="4">{t("Chat")}</Heading>
       <VStack align="stretch" spacing={2}>
-        {/* 팀 채팅 */}
+        {/*그룹 채팅방 */}
         <Flex align="center" gap="2" >
           <Box boxSize="20px" color="#d57239">
             <FolderIcon />
           </Box>
-          <Text fontWeight="bold">{t("Team chat")}</Text>
+          <Text fontWeight="bold" >{t("Team chat")}</Text>
         </Flex>
 
-        {teamRooms.map(room => (
-          <Flex
-            key={room.id}
-            align="center"
-            gap="2"
-            cursor="pointer"
-            onClick={() => onSelectRoom(room)} // 방 전체 객체를 전달
-            fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
-            _hover={{ bg: "#f2f2f2" }}
-            p={1}
-            borderRadius="md"
-          >
-            <BsCircleFill color="green" size="10" />
-            <Text>{room.name}</Text>
-          </Flex>
-        ))}
+        <Box pl="4"> 
+          {teamRooms.map(room => (
+            <Flex
+              key={room.id}
+              align="center"
+              gap="2"
+              cursor="pointer"
+              onClick={() => onSelectRoom(room)} 
+              fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
+              _hover={{ bg: "#f2f2f2" }}
+              p={1}
+              borderRadius="md"
+            >
+              <BsCircleFill color="green" size="10"  />
+              <Text>{room.name}</Text>
+            </Flex>
+          ))}
+        </Box>
 
         <Divider mt="2" mb="1" />
 
@@ -54,23 +56,24 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
           </Box>
           <Text fontWeight="bold">{t("1:1 Chatting")}</Text>
         </Flex>
-
-        {dmRooms.map(room => (
-          <Flex
-            key={room.id}
-            align="center"
-            gap="2"
-            cursor="pointer"
-            onClick={() => onSelectRoom(room)} // 방 전체 객체를 전달
-            fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
-            _hover={{ bg: "#f2f2f2" }}
-            p={1}
-            borderRadius="md"
-          >
-            {room.id === 'user-hong' ? <FaUserTie /> : <FaUserGraduate />}
-            <Text>{room.name}</Text>
-          </Flex>
-        ))}
+        <Box pl="4">
+          {dmRooms.map(room => (
+            <Flex
+              key={room.id}
+              align="center"
+              gap="2"
+              cursor="pointer"
+              onClick={() => onSelectRoom(room)} 
+              fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
+              _hover={{ bg: "#f2f2f2" }}
+              p={1}
+              borderRadius="md"
+            >
+              {room.id === 'user-hong' ? <FaUserTie /> : <FaUserGraduate />}
+              <Text>{room.name}</Text>
+            </Flex>
+          ))}
+          </Box>
       </VStack>
     </Box>
   );
