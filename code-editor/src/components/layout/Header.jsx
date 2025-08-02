@@ -46,27 +46,101 @@ const Header = () => {
     setLang(newLang);
   };
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, projectName: "프로젝트 A", message: "프로젝트 A에서 초대가 왔습니다." },
-  ]);
+  const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
+
+   const BASE_URL = "http://20.196.89.99:8080";
+
+  useEffect(() => {
+    // 초대 수신 목록 API 호출
+    const fetchInvitations = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${BASE_URL}/api/projects/invitations`, {
+          method: 'GET', // GET 요청임을 명시
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error('인증되지 않았습니다. 로그인 상태를 확인하세요.');
+          
+          }
+      throw new Error('Failed to fetch invitations');
+        }
+        const data = await response.json();
+        console.log("=== API로부터 받은 원본 응답 데이터 ===", data);
+
+        // API 응답 형태에 따라 notifications 상태에 맞게 변환
+        const formattedNotifications = data.map(invite => ({
+          id: invite.id,
+          message: `${invite.inviterName} 님이 ${invite.projectName} 프로젝트에 초대했습니다.`,
+          ...invite // 초대 응답 처리 시 필요한 나머지 정보도 함께 저장
+        }));
+
+        console.log("=== 변환 후 notifications 배열 ===", formattedNotifications);
+
+        setNotifications(formattedNotifications);
+
+        console.log("Header.jsx: 현재 notifications 배열:", notifications);
+        console.log("Header.jsx: notifications.length:", notifications.length);
+      } catch (error) {
+        console.error('Error fetching invitations:', error);
+      }
+    };
+
+    fetchInvitations();
+  }, []); // 컴포넌트 마운트 시 한 번만 호출
+
 
   const handleClickNotification = (noti) => {
     setSelectedNotification(noti);
     setInviteModalOpen(true);
   };
 
-  const handleAccept = () => {
-    // 수락 처리 (예: InviteMemberModal 연동 또는 상태 업데이트)
-    setNotifications((prev) => prev.filter((n) => n.id !== selectedNotification.id));
-    setInviteModalOpen(false);
-  };
+ const handleAccept = async () => {
+  if (!selectedNotification) return;
 
-  const handleDecline = () => {
-    setNotifications((prev) => prev.filter((n) => n.id !== selectedNotification.id));
+  try {
+    const token = localStorage.getItem('token'); // 토큰도 함께 보내야 합니다.
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const response = await fetch(`${BASE_URL}/api/projects/invitations/${selectedNotification.id}`, { // BASE_URL 사용
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 인증 토큰 추가
+      },
+      body: JSON.stringify({ action: 'ACCEPT' }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json(); // 서버에서 에러 메시지를 보낼 경우를 대비
+      console.error("서버에서 받은 오류 데이터:", errorData);
+      throw new Error(errorData.message || 'Failed to accept invitation');
+    }
+
+    setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
     setInviteModalOpen(false);
-  };
+    // 프로젝트 멤버 목록을 새로 불러와 UI에 반영해야 합니다.
+    // 예를 들어, Header 컴포넌트의 부모가 fetchProjectMembers 함수를 props로 전달한다면
+    // onAccept={async () => { await handleAccept(); fetchProjectMembers(selectedNotification.projectId); }}
+    // 와 같이 호출해야 합니다.
+    // 아니면 Header 컴포넌트에서 직접 Project 멤버 목록을 관리하거나, 전역 상태 관리 사용.
+    alert('초대가 수락되었습니다!');
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    alert(`초대 수락에 실패했습니다: ${error.message}`);
+  }
+};
+
 
   useEffect(() => {
     // MyPage에서 전달된 상태가 있는지 확인
@@ -93,6 +167,40 @@ const Header = () => {
       window.removeEventListener('focus', checkLoginStatus);
     };
   }, [location.state]); // location.state가 변경될 때마다 실행
+
+  const handleDecline = async () => {
+  if (!selectedNotification) return;
+
+  try {
+    const token = localStorage.getItem('token'); // 토큰도 함께 보내야 합니다.
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const response = await fetch(`${BASE_URL}/api/projects/invitations/${selectedNotification.id}`, { // BASE_URL 사용
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 인증 토큰 추가
+      },
+      body: JSON.stringify({ action: 'REJECT' }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json(); // 서버에서 에러 메시지를 보낼 경우를 대비
+      console.error("서버에서 받은 오류 데이터:", errorData);
+      throw new Error(errorData.message || 'Failed to decline invitation');
+    }
+
+    setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
+    setInviteModalOpen(false);
+    alert('초대가 거절되었습니다.');
+  } catch (error) {
+    console.error('Error declining invitation:', error);
+    alert(`초대 거절에 실패했습니다: ${error.message}`);
+  }
+};
 
   // 현재 경로 기반으로 active 상태 결정
   const isActive = (path) => location.pathname.startsWith(path);
@@ -198,58 +306,57 @@ const Header = () => {
         </HStack>
 
         <Menu>
-          <MenuButton
-            as={IconButton}
-            icon={
-              <Box position="relative">
-                <FiBell size={22} color="black" />
-                {notifications.length > 0 && (
-                  <Badge
-                    bg="#d57239"
-                    borderRadius="full"
-                    position="absolute"
-                    top="-1"
-                    right="-1"
-                    px="1"
-                    fontSize="0.6em"
-                    color="white"
-                    width="14px"
-                    height="14px"
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    {notifications.length}
-                  </Badge>
-                )}
-              </Box>
-            }
-            variant="ghost" // 배경 없애기
-            bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-          />
-          <MenuList zIndex={1000}>
-            {notifications.length > 0 ? (
-              notifications.map((noti) => (
-                <MenuItem key={noti.id} onClick={() => handleClickNotification(noti)}>
-                  {noti.message}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>새 알림이 없습니다</MenuItem>
-            )}
-          </MenuList>
-        </Menu>
-
-        {/* 알림 클릭 시 뜨는 모달 */}
-        <InvitationModal
-          isOpen={isInviteModalOpen}
-          onClose={() => setInviteModalOpen(false)}
-          notification={selectedNotification}
-          onAccept={handleAccept}
-          onDecline={handleDecline}
+        <MenuButton
+          as={IconButton}
+          icon={
+            <Box position="relative">
+              <FiBell size={22} color="black" />
+              {notifications.length > 0 && (
+                <Badge
+                  bg="#d57239"
+                  borderRadius="full"
+                  position="absolute"
+                  top="-1"
+                  right="-1"
+                  px="1"
+                  fontSize="0.6em"
+                  color="white"
+                  width="14px"
+                  height="14px"
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  {notifications.length}
+                </Badge>
+              )}
+            </Box>
+          }
+          variant="ghost"
+          bg="transparent"
+          _hover={{ bg: "transparent" }}
+          _active={{ bg: "transparent" }}
         />
+        <MenuList zIndex={1000} background="#d57239">
+          {notifications.length > 0 ? (
+            notifications.map((noti) => (
+              <MenuItem background="#d57239" key={noti.id} onClick={() => handleClickNotification(noti)}>
+                {noti.message}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem background="#d57239" disabled >새 알림이 없습니다</MenuItem>
+          )}
+        </MenuList>
+      </Menu>
+
+      <InvitationModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        notification={selectedNotification}
+        onAccept={handleAccept}
+        onDecline={handleDecline}
+      />
 
         <Flex justify="flex-end" p={4}>
           <Menu>
@@ -260,22 +367,22 @@ const Header = () => {
               borderRadius="full"
               p={0}
             />
-            <MenuList bg="brand.100" color="text.primary">
+            <MenuList bg="white" color="text.primary">
               {isLoggedIn ? (
                 <>
-                  <MenuItem bg="brand.100" _hover={{ bg: "brand.300" }} onClick={() => navigate("/mypage")}>
+                  <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} onClick={() => navigate("/mypage")}>
                     {t("My Page")}
                   </MenuItem>
-                  <MenuItem bg="brand.100" _hover={{ bg: "brand.300" }} onClick={handleLogout}>
+                  <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} onClick={handleLogout}>
                     {t("Logout")}
                   </MenuItem>
                 </>
               ) : (
                 <>
-                  <MenuItem bg="brand.100" _hover={{ bg: "brand.300" }} onClick={loginModal.onOpen}>
+                  <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} onClick={loginModal.onOpen}>
                     {t("Login")}
                   </MenuItem>
-                  <MenuItem bg="brand.100" _hover={{ bg: "brand.300" }} onClick={signupModal.onOpen}>
+                  <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} onClick={signupModal.onOpen}>
                     {t("Sign Up")}
                   </MenuItem>
                 </>
