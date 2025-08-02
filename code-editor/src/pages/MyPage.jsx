@@ -17,10 +17,16 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  Divider,
 } from "@chakra-ui/react";
+import {
+  getReceivedInvitations,
+  getSentInvitations,
+} from "../services/invitationService"; 
+
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef,useCallback  } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function MyPage() {
@@ -42,7 +48,11 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const BASE_URL = "http://20.196.89.99:8080"; // API 명세에 따른 BASE_URL
+  const BASE_URL = "http://20.196.89.99:8080"; 
+
+  const [receivedInvitations, setReceivedInvitations] = useState([]);
+  const [sentInvitations, setSentInvitations] = useState([]);
+  const [invitationsLoading, setInvitationsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -71,6 +81,32 @@ export default function MyPage() {
 
     fetchUser();
   }, [token, toast]);
+
+  const fetchInvitations = useCallback(async () => {
+    if (!token) return;
+    setInvitationsLoading(true);
+    try {
+      const received = await getReceivedInvitations(token);
+      setReceivedInvitations(received);
+
+      const sent = await getSentInvitations(token);
+      setSentInvitations(sent);
+    } catch (err) {
+      toast({
+        title: err.message,
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setInvitationsLoading(false);
+    }
+  }, [token, toast]);
+
+  // 컴포넌트 마운트 시 초대 목록 불러오기
+  useEffect(() => {
+    fetchInvitations();
+  }, [fetchInvitations]);
+
 
   const handleNicknameSave = async () => {
     try {
@@ -142,11 +178,6 @@ export default function MyPage() {
 
       setCurrentPw("");
       setNewPw("");
-      // 비밀번호 변경 시 새 토큰이 반환되지 않는다는 가정 하에 제거
-      // 만약 API 응답에 새 토큰이 있다면 아래 주석 해제하여 사용
-      // if (data.token) {
-      //   localStorage.setItem("token", data.token);
-      // }
     } catch (err) {
       toast({
         title: err.message,
@@ -202,6 +233,8 @@ export default function MyPage() {
     );
   }
 
+  
+
   return (
     <Box p={8} bg="brand.100" minH="90vh">
       <Text fontSize="2xl" fontWeight="bold" mb={6} color="text.primary">
@@ -234,6 +267,88 @@ export default function MyPage() {
               </Badge>
             </Flex>
           </Flex>
+        <Divider my={6} borderColor="gray.300" borderWidth="1px" /> 
+          <Text fontWeight="semibold" fontSize="lg" mb={4} color="text.primary">
+            {t("Received Invitations")}
+          </Text>
+          {invitationsLoading ? (
+            <Flex justify="center" align="center" minH="100px" border="1px" borderColor="gray.200" borderRadius="md">
+              <Spinner size="md" />
+            </Flex>
+          ) : receivedInvitations.length === 0 ? (
+            <Text color="text.tertiary" p={3} minH="100px" border="1px" borderColor="gray.200" borderRadius="md">{t("No received invitations.")}</Text>
+          ) : (
+            <Flex
+              direction="column"
+              p={3}
+              border="1px"
+              borderColor="gray.200"
+              borderRadius="md" 
+              maxH="150px" 
+              overflowY="auto" 
+              
+            >
+              {receivedInvitations.map((invite, index) => (
+                <Box key={invite.id} pb={2} mb={index < receivedInvitations.length - 1 ? 2 : 0} borderBottom={index < receivedInvitations.length - 1 ? "1px solid" : "none"} borderColor="gray.100"> 
+                  <Text fontWeight="medium" color="gray.600">{invite.projectName}</Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {t("Invited by")}: {invite.inviterName} ({invite.inviterEmail}) ({invite.role})
+                    
+                  </Text>
+
+                  <Flex justify="space-between" align="center" mt={2}>
+                    <Badge colorScheme={
+                      invite.status === "PENDING" ? "orange" :
+                      invite.status === "ACCEPTED" ? "green" : "red"
+                    }>
+                      {t(invite.status)}
+                    </Badge>
+                  </Flex>
+                </Box>
+              ))}
+            </Flex>
+          )}
+
+          {/* --- 보낸 초대 목록 --- */}
+          <Divider my={6} borderColor="gray.300" borderWidth="1px"/> {/* 구분선 추가 */}
+          <Text fontWeight="semibold" fontSize="lg" mb={4} color="text.primary">
+            {t("Sent Invitations")}
+          </Text>
+          {invitationsLoading ? (
+            <Flex justify="center" align="center" minH="100px" border="1px" borderColor="gray.200" borderRadius="md"> 
+              <Spinner size="md" />
+            </Flex>
+          ) : sentInvitations.length === 0 ? (
+            <Text color="text.tertiary" p={3} minH="100px" border="1px" borderColor="gray.200" borderRadius="md">{t("No sent invitations.")}</Text>
+          ) : (
+            <Flex
+              direction="column"
+              p={3}
+              border="1px"
+              borderColor="gray.200"
+              borderRadius="md" 
+              maxH="150px" 
+              overflowY="auto" 
+              
+            >
+              {sentInvitations.map((invite, index) => (
+                <Box key={invite.id} pb={2} mb={index < sentInvitations.length - 1 ? 2 : 0} borderBottom={index < sentInvitations.length - 1 ? "1px solid" : "none"} borderColor="gray.100">
+                  <Text fontWeight="medium" color="gray.600">{invite.projectName}</Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {t("Invited to")}: {invite.inviterEmail} ({invite.role})
+                  </Text>
+                  <Flex justify="space-between" align="center" mt={2}>
+                    <Badge colorScheme={
+                      invite.status === "PENDING" ? "blue" :
+                      invite.status === "ACCEPTED" ? "green" : "red"
+                    }>
+                      {t(invite.status)}
+                    </Badge>
+                  </Flex>
+                </Box>
+              ))}
+            </Flex>
+          )}
         </Box>
 
         {/* 오른쪽: 수정 영역 */}

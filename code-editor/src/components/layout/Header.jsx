@@ -337,15 +337,15 @@ const Header = () => {
           _hover={{ bg: "transparent" }}
           _active={{ bg: "transparent" }}
         />
-        <MenuList zIndex={1000} background="#d57239">
+        <MenuList zIndex={1000} background="white">
           {notifications.length > 0 ? (
             notifications.map((noti) => (
-              <MenuItem background="#d57239" key={noti.id} onClick={() => handleClickNotification(noti)}>
+              <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} color="black" key={noti.id} onClick={() => handleClickNotification(noti)}>
                 {noti.message}
               </MenuItem>
             ))
           ) : (
-            <MenuItem background="#d57239" disabled >새 알림이 없습니다</MenuItem>
+            <MenuItem bg="white" _hover={{ bg: "#f2f2f2" }} color="black" disabled >새 알림이 없습니다</MenuItem>
           )}
         </MenuList>
       </Menu>
