@@ -61,7 +61,7 @@ const Header = () => {
     // ✅ Effect 2: 로그인 상태를 실시간으로 감지합니다.
     useEffect(() => {
         const checkLoginStatus = () => {
-            const token = localStorage.getItem("token");
+            const token  = localStorage.getItem("ACCESS_TOKEN_KEY"); 
             setIsLoggedIn(!!token);
         };
         window.addEventListener('storage', checkLoginStatus);

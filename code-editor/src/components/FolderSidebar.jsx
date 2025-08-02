@@ -1,8 +1,9 @@
+import React from "react";
 import { Box, VStack } from "@chakra-ui/react";
-import FileNode from "./FileNode";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { CODE_SNIPPETS } from "../constants"; // ✅ CODE_SNIPPETS를 import 합니다.
+import FileNode from "./FileNode";
+import { CODE_SNIPPETS } from "../constants";
 
 const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
 
@@ -20,33 +21,28 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
     });
   };
 
-  // ✅ 새 파일 생성 로직을 수정했습니다.
   const addChild = (parentId, name, nodes = tree) => {
     return nodes.map((node) => {
       if (node.id === parentId && node.type === "folder") {
         const isFile = name.includes(".");
         const isSql = name.toLowerCase().endsWith('.sql');
-        const id = `new-${Date.now()}`; // 새 노드 ID 생성
+        const id = `new-${Date.now()}`;
 
-        let newChild;
-        if (isFile) {
-          newChild = {
-            id,
-            name,
-            type: "file",
-            // 파일 이름이 .sql로 끝나면 language와 content를 설정합니다.
-            language: isSql ? 'sql' : 'javascript', 
-            content: isSql ? CODE_SNIPPETS.sql : '', 
-          };
-        } else {
-          newChild = {
-            id,
-            name,
-            type: "folder",
-            isOpen: true,
-            children: [],
-          };
-        }
+        const newChild = isFile
+          ? {
+              id,
+              name,
+              type: "file",
+              language: isSql ? 'sql' : 'javascript', 
+              content: isSql ? CODE_SNIPPETS.sql : '', 
+            }
+          : {
+              id,
+              name,
+              type: "folder",
+              isOpen: true,
+              children: [],
+            };
         return { ...node, children: [...(node.children || []), newChild] };
       }
       if (node.children) {
@@ -100,13 +96,16 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
 
     const newTreeWithoutSource = filterSource(nodes);
 
+    if (!sourceNode) {
+      return nodes;
+    }
+
+    let inserted = false;
     const insertSource = (currentNodes) =>
       currentNodes.map((node) => {
         if (node.id === targetId && node.type === "folder") {
-          return {
-            ...node,
-            children: [...(node.children || []), sourceNode],
-          };
+          inserted = true;
+          return { ...node, children: [...(node.children || []), sourceNode] };
         }
         if (node.children) {
           return { ...node, children: insertSource(node.children) };
@@ -114,11 +113,15 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
         return node;
       });
 
-    if (!sourceNode) return nodes; // 이동할 노드를 찾지 못하면 원본 트리 반환
-    return insertSource(newTreeWithoutSource);
+    const finalTree = insertSource(newTreeWithoutSource);
+
+    if (!inserted) {
+      return nodes;
+    }
+
+    return finalTree;
   };
 
-  // --- 핸들러 함수들 ---
   const handleToggle = (id) => setTree((prev) => toggleOpen(id, prev));
   const handleAddChild = (parentId, name) => setTree((prev) => addChild(parentId, name, prev));
   const handleRename = (id, newName) => setTree((prev) => renameNode(id, newName, prev));
@@ -134,10 +137,10 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
         bg="brand.100"
         color="text.primary"
         p={4}
-        height="100%" // 100vh 대신 100%로 설정하여 부모 패널에 맞춤
+        height="100%"
         overflowY="auto"
         borderRight="1px solid"
-        borderColor="gray.200" // Chakra UI 테마 색상 사용
+        borderColor="gray.200"
       >
         <VStack align="start" spacing={1}>
           {tree.map((node) => (

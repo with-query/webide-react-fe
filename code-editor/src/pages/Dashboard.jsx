@@ -60,7 +60,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             setLoading(true);
-            const token = localStorage.getItem("token");
+            const token  = localStorage.getItem("ACCESS_TOKEN_KEY"); 
 
             if (!token) {
                 toast({
