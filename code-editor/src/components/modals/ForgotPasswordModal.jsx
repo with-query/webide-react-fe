@@ -16,7 +16,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useState } from "react"; // useState 추가
 
-const BASE_URL = "http://localhost:8080"; // API 기본 URL
+const BASE_URL = "http://20.196.89.99:8080";
 
 const ForgotPasswordModal = ({ isOpen, onClose, onOpenLogin }) => {
   const { t } = useTranslation();
