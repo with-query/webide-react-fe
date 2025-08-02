@@ -29,8 +29,9 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/DBConnect" element={<DBConnect />} />
-        <Route path="/editor/:projectId" element={<Editor />} />
         
+        <Route path="/ide" element={<Editor />} />
+        <Route path="/editor/:projectId" element={<Editor />} />
         <Route path="/query-builder/:projectId" element={<Workspace />} />
         <Route path="/query-builder/:projectId/:dbConnectionId" element={<Workspace />} />
         
