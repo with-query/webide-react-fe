@@ -1,157 +1,3 @@
-/*import {
-  Box,
-  Flex,
-  Avatar,
-  Text,
-  Input,
-  Button,
-  Badge,
-  useTheme,
-  InputGroup,
-  InputRightElement,
-  IconButton,
-} from "@chakra-ui/react";
-import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
-import { useTranslation } from "react-i18next";
-import { useState } from "react";
-
-export default function MyPage() {
-  const theme = useTheme();
-  const { t } = useTranslation();
-
-  const [showCurrentPw, setShowCurrentPw] = useState(false);
-  const [showNewPw, setShowNewPw] = useState(false);
-  const [showConfirmPw, setShowConfirmPw] = useState(false);
-
-  return (
-    <Box p={8} bg="brand.100" minH="90vh">
-      <Text fontSize="2xl" fontWeight="bold" mb={6} color="text.primary">
-        {t("My Page")}
-      </Text>
-
-      <Flex direction={{ base: "column", md: "row" }} gap={10} align="flex-start" >
-        
-        <Box
-          flexShrink={0}
-          ml="3%"
-          width={{ base: "100%", md: "40%" }}
-          p={6}
-          bg="white"
-          borderRadius="xl"
-          boxShadow="md"
-        >
-          <Flex direction="column" align="center">
-            <Avatar
-              size="xl"
-              src="/profile.png"
-              border={`4px solid ${theme.colors.brand[500]}`}
-              mb={3}
-            />
-            <Text fontWeight="bold" fontSize="lg" color="text.primary">
-              {t("Name")}
-            </Text>
-            <Text color="text.tertiary" mb={4}>
-              kim@example.com
-            </Text>
-
-            <Flex w="100%" justify="space-between" color="text.tertiary">
-              <Text>{t("Sign up date")}</Text>
-              <Text>2023.01.15</Text>
-            </Flex>
-            <Flex w="100%" justify="space-between" color="text.tertiary" mt={2}>
-              <Text>{t("Last access date")}</Text>
-              <Text>2023.06.20</Text>
-            </Flex>
-            <Flex w="100%" justify="space-between" mt={2}>
-              <Text color="text.tertiary">{t("Account status")}</Text>
-              <Badge color="text.tertiary" bg="none" fontWeight="bold">
-                {t("Active")}
-              </Badge>
-            </Flex>
-          </Flex>
-        </Box>
-
-
-        <Flex direction="column" width={{ base: "100%", md: "50%" }} gap={6}>
-
-          <Box p={6} bg="white" borderRadius="xl" boxShadow="md" >
-            <Text fontWeight="semibold" mb={4} color="text.primary">
-              {t("Information")}
-            </Text>
-            <Input placeholder={t("Nickname")} mb={3} />
-            <Input placeholder={t("Email")} mb={3} />
-            <Input placeholder={t("Number")} defaultValue="010-1234-5678" mb={3} />
-            <Input placeholder={t("Department")} defaultValue="개발팀" mb={3} />
-            <Button variant="solid">{t("Save")}</Button>
-          </Box>
-
-
-          <Box p={6} bg="white" borderRadius="xl" boxShadow="md">
-            <Text fontWeight="semibold" mb={4} color="text.primary">
-              {t("Change Password")}
-            </Text>
-
-
-            <InputGroup mb={3}>
-              <Input
-                type={showCurrentPw ? "text" : "password"}
-                placeholder={t("Current Password")}
-              />
-              <InputRightElement>
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  icon={showCurrentPw ? <ViewOffIcon /> : <ViewIcon />}
-                  onClick={() => setShowCurrentPw(!showCurrentPw)}
-                  aria-label="Toggle password visibility"
-                />
-              </InputRightElement>
-            </InputGroup>
-
-            <InputGroup mb={3}>
-              <Input
-                type={showNewPw ? "text" : "password"}
-                placeholder={t("New Password")}
-              />
-              <InputRightElement>
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  icon={showNewPw ? <ViewOffIcon /> : <ViewIcon />}
-                  onClick={() => setShowNewPw(!showNewPw)}
-                  aria-label="Toggle password visibility"
-                />
-              </InputRightElement>
-            </InputGroup>
-
-            <InputGroup mb={4}>
-              <Input
-                type={showConfirmPw ? "text" : "password"}
-                placeholder={t("Confirm New Password")}
-              />
-              <InputRightElement>
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  icon={showConfirmPw ? <ViewOffIcon /> : <ViewIcon />}
-                  onClick={() => setShowConfirmPw(!showConfirmPw)}
-                  aria-label="Toggle password visibility"
-                />
-              </InputRightElement>
-            </InputGroup>
-
-            <Button variant="outline" width="100%">
-              {t("Change Password")}
-            </Button>
-          </Box>
-        </Flex>
-      </Flex>
-    </Box>
-  );
-}
-*/
-
-//API 연동 버전 마이페이지
 import {
   Box,
   Flex,
@@ -196,7 +42,7 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-   const BASE_URL = "http://20.196.89.99:8080";
+  const BASE_URL = "http://20.196.89.99:8080"; // API 명세에 따른 BASE_URL
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -248,7 +94,10 @@ export default function MyPage() {
       });
 
       setUser((prev) => ({ ...prev, nickname }));
-      localStorage.setItem("token", data.token); // 새 토큰 저장
+      // API 명세에 따라 닉네임 변경 시 새로운 토큰이 반환되므로 업데이트
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
     } catch (err) {
       toast({
         title: err.message,
@@ -293,6 +142,11 @@ export default function MyPage() {
 
       setCurrentPw("");
       setNewPw("");
+      // 비밀번호 변경 시 새 토큰이 반환되지 않는다는 가정 하에 제거
+      // 만약 API 응답에 새 토큰이 있다면 아래 주석 해제하여 사용
+      // if (data.token) {
+      //   localStorage.setItem("token", data.token);
+      // }
     } catch (err) {
       toast({
         title: err.message,
@@ -303,8 +157,6 @@ export default function MyPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후 복구는 불가능합니다.")) return;
-
     try {
       const res = await fetch(`${BASE_URL}/api/users/me`, {
         method: "DELETE",
@@ -317,9 +169,8 @@ export default function MyPage() {
 
       if (!res.ok) throw new Error(data.message || "회원 탈퇴 실패");
 
-   
       localStorage.removeItem("token");
-      localStorage.removeItem("nickname");
+      localStorage.removeItem("nickname"); // 닉네임도 함께 제거
       setUser(null);
       setNickname("");
       setCurrentPw("");
@@ -331,8 +182,9 @@ export default function MyPage() {
         duration: 3000,
       });
 
-     
-      navigate("/login");
+      setIsDeleteOpen(false);
+    // 로그인 페이지로 이동하면서 'isLoggedOut' 상태를 전달합니다.
+    navigate("/login", { state: { isLoggedOut: true } }); 
     } catch (err) {
       toast({
         title: err.message,
@@ -403,7 +255,7 @@ export default function MyPage() {
           </Box>
 
           {/* 비밀번호 변경 */}
-          <Box p={6}  borderRadius="xl" boxShadow="md">
+          <Box p={6} borderRadius="xl" boxShadow="md">
             <Text fontWeight="semibold" mb={4} color="text.primary">
               {t("Change Password")}
             </Text>
@@ -417,7 +269,6 @@ export default function MyPage() {
               />
               <InputRightElement>
                 <IconButton
-                  //variant="ghost"
                   size="sm"
                   icon={showCurrentPw ? <ViewOffIcon /> : <ViewIcon />}
                   onClick={() => setShowCurrentPw(!showCurrentPw)}
@@ -433,9 +284,8 @@ export default function MyPage() {
                 value={newPw}
                 onChange={(e) => setNewPw(e.target.value)}
               />
-              <InputRightElement  >
+              <InputRightElement>
                 <IconButton
-                 // variant="ghost"
                   size="sm"
                   icon={showNewPw ? <ViewOffIcon /> : <ViewIcon />}
                   onClick={() => setShowNewPw(!showNewPw)}
@@ -444,7 +294,7 @@ export default function MyPage() {
               </InputRightElement>
             </InputGroup>
 
-            <Button variant="solid" width="100%"  onClick={handleChangePassword}>
+            <Button variant="solid" width="100%" onClick={handleChangePassword}>
               {t("Change Password")}
             </Button>
           </Box>
