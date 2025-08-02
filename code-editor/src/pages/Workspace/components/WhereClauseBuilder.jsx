@@ -5,9 +5,9 @@ import { Box, HStack, VStack, Input, Button, IconButton, Text, Menu, MenuButton,
 import { AddIcon, DeleteIcon, ChevronDownIcon } from '@chakra-ui/icons';
 
 const WhereClauseBuilder = ({ nodes, clauses, setClauses }) => {
-  const allColumns = Object.values(nodes).flatMap(node => 
-    (node.columns || []).map(col => `${node.alias || node.name}.${col.name}`)
-  );
+   const allColumns = nodes.flatMap(node => 
+        (node.data.columns || []).map(col => `${node.data.alias || node.data.tableName}.${col.name}`)
+    );
 
   const operators = ['=', '!=', '>', '<', '>=', '<=', 'LIKE', 'IN', 'IS NULL', 'IS NOT NULL'];
 
