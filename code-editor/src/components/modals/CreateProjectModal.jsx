@@ -12,6 +12,7 @@ const CreateProjectModal = ({
   onNext,
   skipStep1 = false,
   presetProjectName = "",
+  user,
 }) => {
   const { t } = useTranslation();
   const [step, setStep] = useState(skipStep1 ? 2 : 1);
@@ -26,7 +27,7 @@ const CreateProjectModal = ({
     dbName: "",
     host: "",
     port: "",
-    user: "", // 이 필드가 백엔드의 'username'에 매핑될 것임
+    user: "", 
     password: "",
     schema: "",
     searchPath: "",
@@ -184,22 +185,23 @@ const CreateProjectModal = ({
             setTestResult("success"); // 강제로 성공 처리
             setIsTesting(false);
         }, 1000);
-        
+
     const BASE_URL_FOR_TEST = "http://20.196.89.99:8080"; // 테스트용 URL
     const token = localStorage.getItem("token"); // 토큰도 필요할 것임 // DB 연결 테스트 시에도 url, driverClassName, username을 백엔드 형식에 맞춰 구성
 
-    const currentUserId = 0;
+    //const currentUserId = 0;
 
     let payloadForTest = {
-      name: dbConfig.dbName || projectName + " DB Test Connection", // DB 연결의 논리적 이름
-      username: dbConfig.user || dbConfig.username, // 'user'를 'username'으로 매핑
+      name: dbConfig.dbName || projectName + " DB Test",
+      username: dbConfig.user, // 'user'를 'username'으로 매핑
       password: dbConfig.password,
-      projectId: 0, 
-      createdById: currentUserId,
       url: '',
       driverClassName: '',
     };
 
+    if (user && user.id) {
+        payloadForTest.createdById = user.id;
+    }
 
     switch (dbType) {
       case 'mysql':

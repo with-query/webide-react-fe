@@ -1,33 +1,70 @@
-
 import { useRef, useEffect, useState } from "react";
-import { Box, HStack } from "@chakra-ui/react";
+import { 
+    Box,
+    Flex,
+    HStack,
+    Button,
+    Spacer,
+    useToast 
+} from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
 import Output from "./Output";
 import { CODE_SNIPPETS } from "../constants";
 import { useTranslation } from "react-i18next";
+import { executeCode } from "../api"; 
 
-
-const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
+const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving }) => {
   const editorRef = useRef();
   const [value, setValue] = useState("");
   const { t } = useTranslation();
 
-  // 파일이 바뀌면 해당 언어의 기본 스니펫으로 초기화
-  useEffect(() => {
-  if (file) {
-    const defaultSnippet = CODE_SNIPPETS[file.language] ?? "";
+  // --- 코드 실행 관련 로직 ---
+  const toast = useToast();
+  const [output, setOutput] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-    // 내용이 없을 때만 초기화 (이미 작성된 코드 덮어쓰지 않도록)
-    if (!file.content || file.content.trim() === "") {
-      setValue(defaultSnippet);
-      onChangeContent(defaultSnippet); // 최초 1회만 초기화
-    } else {
-      setValue(file.content);
+  // "Run Code" 버튼을 누르면 이 함수가 실행됩니다.
+  const runCode = async () => {
+    // 에디터에서 현재 코드를 가져옵니다.
+    const sourceCode = editorRef.current.getValue();
+    if (!sourceCode) return;
+    try {
+      setIsLoading(true); // 로딩 시작
+      // API를 호출하여 코드를 실행합니다.
+      const { run: result } = await executeCode(file.language, sourceCode);
+      setOutput(result.output.split("\n"));
+      result.stderr ? setIsError(true) : setIsError(false);
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "An error occurred.",
+        description: error.message || "Unable to run code",
+        status: "error",
+        duration: 6000,
+      });
+    } finally {
+      setIsLoading(false); // 로딩 종료
     }
-  }
-}, [file]);
+  };
+  // --- 코드 실행 로직 끝 ---
 
+  useEffect(() => {
+    if (file) {
+      const defaultSnippet = CODE_SNIPPETS[file.language] ?? "";
+      if (file.content) {
+        setValue(file.content);
+      } else {
+        // 새 파일일 경우, 기본 스니펫으로 내용을 채우고 부모 상태도 업데이트합니다.
+        setValue(defaultSnippet);
+        onChangeContent(defaultSnippet);
+      }
+      // 파일이 변경되면 아웃풋을 초기화합니다.
+      setOutput(null);
+      setIsError(false);
+    }
+  }, [file, onChangeContent]);
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -40,13 +77,7 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
   };
 
   const handleLanguageChange = (lang) => {
-    // 언어 변경
     onLanguageChange(lang);
-
-    // 언어에 맞는 스니펫으로 변경
-    const newSnippet = CODE_SNIPPETS[lang] ?? "";
-    setValue(newSnippet);
-    onChangeContent(newSnippet);
   };
 
   if (!file) {
@@ -59,121 +90,60 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
 
   return (
     <Box w="100%" bg="brand.100" color="text.primary" fontWeight="bold" m={2}>
-      <HStack spacing={4} align="start">
-        <Box w="50%">
-          <LanguageSelector
-            language={file.language}
-            onSelect={handleLanguageChange}
-          />
-          <Box border="1px solid black" borderRadius="md" overflow="hidden" >
+      <Flex direction={{ base: "column", md: "row" }} gap={4}>
+        
+        {/* 왼쪽: 코드 에디터 영역 */}
+        <Flex direction="column" w={{ base: "100%", md: "50%" }}>
+          <HStack spacing={4} mb={2} h="32px"> 
+            <LanguageSelector
+              language={file.language}
+              onSelect={handleLanguageChange}
+            />
+          </HStack>
+          <Box border="1px solid #999" borderRadius="md" overflow="hidden">
             <Editor
-              key={`${file.id}-${file.language}`} // 언어 변경 감지
+              key={`${file.id}-${file.language}`}
               height="75vh"
-
               language={file.language}
               value={value}
               onChange={handleEditorChange}
               onMount={onMount}
-              options={{
-                minimap: { enabled: false },
-              }}
+              options={{ minimap: { enabled: false } }}
             />
           </Box>
-        </Box>
-        <Output editorRef={editorRef} language={file.language} />
-      </HStack>
+        </Flex>
+
+        {/* 오른쪽: 아웃풋 영역 */}
+        <Flex direction="column" w={{ base: "100%", md: "50%" }}>
+          <HStack spacing={4} mb={2} h="32px">
+            <Button
+              size="sm"
+              colorScheme="green"
+              isLoading={isLoading}
+              onClick={runCode}
+            >
+              Run Code
+            </Button>
+            <Spacer />
+            <Button size="sm" variant="outline">
+              공유
+            </Button>
+            <Button
+              size="sm"
+              colorScheme="orange"
+              onClick={onSave}
+              isLoading={isSaving}
+            >
+              저장
+            </Button>
+          </HStack>
+          <Box flex="1" border="1px solid" borderColor={isError ? "red.500" : "#999"} borderRadius="md" overflow="hidden">
+            <Output output={output} isError={isError} />
+          </Box>
+        </Flex>
+      </Flex>
     </Box>
   );
 };
 
 export default CodeEditor;
-
-/*
-import { useRef, useEffect, useState } from "react";
-import { Box, HStack } from "@chakra-ui/react";
-import { Editor } from "@monaco-editor/react";
-import LanguageSelector from "./LanguageSelector";
-import Output from "./Output";
-import { CODE_SNIPPETS } from "../constants";
-import { useTranslation } from "react-i18next";
-
-
-const CodeEditor = ({ file, onChangeContent, onLanguageChange }) => {
-  const editorRef = useRef();
-  const [value, setValue] = useState("");
-  const { t } = useTranslation();
-
-  // 파일이 바뀌면 해당 언어의 기본 스니펫으로 초기화
-  useEffect(() => {
-  if (file) {
-    const defaultSnippet = CODE_SNIPPETS[file.language] ?? "";
-
-    // 내용이 없을 때만 초기화 (이미 작성된 코드 덮어쓰지 않도록)
-    if (!file.content || file.content.trim() === "") {
-      setValue(defaultSnippet);
-      onChangeContent(defaultSnippet); // 최초 1회만 초기화
-    } else {
-      setValue(file.content);
-    }
-  }
-}, [file]);
-
-
-  const onMount = (editor) => {
-    editorRef.current = editor;
-    editor.focus();
-  };
-
-  const handleEditorChange = (newValue) => {
-    setValue(newValue);
-    onChangeContent(newValue);
-  };
-
-  const handleLanguageChange = (lang) => {
-    // 언어 변경
-    onLanguageChange(lang);
-
-    // 언어에 맞는 스니펫으로 변경
-    const newSnippet = CODE_SNIPPETS[lang] ?? "";
-    setValue(newSnippet);
-    onChangeContent(newSnippet);
-  };
-
-  if (!file) {
-    return (
-      <Box w="100%" p={10} textAlign="center" fontSize="xl" bg="brand.100" color="text.primary">
-        {t("Select a file")}
-      </Box>
-    );
-  }
-
-  return (
-    <Box w="100%" bg="brand.100" color="text.primary" fontWeight="bold" m={2}>
-      <HStack spacing={4} align="start">
-        <Box w="50%">
-          <LanguageSelector
-            language={file.language}
-            onSelect={handleLanguageChange}
-          />
-          <Box border="1px solid black" borderRadius="md" overflow="hidden" >
-            <Editor
-              key={`${file.id}-${file.language}`} // 언어 변경 감지
-              height="75vh"
-
-              language={file.language}
-              value={value}
-              onChange={handleEditorChange}
-              onMount={onMount}
-              options={{
-                minimap: { enabled: false },
-              }}
-            />
-          </Box>
-        </Box>
-        <Output editorRef={editorRef} language={file.language} />
-      </HStack>
-    </Box>
-  );
-};
-
-export default CodeEditor;*/
