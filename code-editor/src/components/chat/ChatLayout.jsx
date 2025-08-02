@@ -7,8 +7,6 @@ import ChatWindow from '../components/chat/ChatWindow'; // 오류: '../component
 import ChatList from '../components/chat/ChatList'; // 오류: '../components/chat/ChatList' 경로를 찾을 수 없습니다. 파일 경로가 정확한지 확인해주세요.
 import { useState, useEffect } from 'react';
 
-// BASE_URL은 Context에서 가져오거나, 앱 전역에서 관리되는 상수 사용을 권장합니다.
-// 여기서는 일단 직접 정의하겠습니다.
 const BASE_URL = "http://20.196.89.99:8080";
 
 const ChatLayout = () => {

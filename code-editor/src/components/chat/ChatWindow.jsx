@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 
 
 const ChatWindow = ({ selectedRoom, onBack, onLeaveRoom }) => {
-  const { messages, sendMessage, currentUserInfo } = useChat();
+  const { messages, sendMessage, currentUserInfo, currentRoomMembers } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [roomMembers, setRoomMembers] = useState({}); 
   const messagesEndRef = useRef(null);
@@ -143,7 +143,8 @@ const ChatWindow = ({ selectedRoom, onBack, onLeaveRoom }) => {
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
             roomName={selectedRoom.name}
-            members={roomMembers[selectedRoom.id] || []} 
+            //members={roomMembers[selectedRoom.id] || [currentRoomMembers]} 
+            members={currentRoomMembers} 
             onLeave={() => onLeaveRoom(selectedRoom.id)}
           />
         </>

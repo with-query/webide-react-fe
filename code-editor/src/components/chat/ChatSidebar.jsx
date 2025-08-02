@@ -36,7 +36,7 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
             cursor="pointer"
             onClick={() => onSelectRoom(room)} // 방 전체 객체를 전달
             fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
-            _hover={{ bg: "gray.100" }}
+            _hover={{ bg: "#f2f2f2" }}
             p={1}
             borderRadius="md"
           >
@@ -63,7 +63,7 @@ const ChatSidebar = ({ onSelectRoom, selectedRoom, availableRooms = [] }) => {
             cursor="pointer"
             onClick={() => onSelectRoom(room)} // 방 전체 객체를 전달
             fontWeight={selectedRoom && selectedRoom.id === room.id ? 'bold' : 'normal'} // selectedRoom이 객체이므로 .id 접근
-            _hover={{ bg: "gray.100" }}
+            _hover={{ bg: "#f2f2f2" }}
             p={1}
             borderRadius="md"
           >

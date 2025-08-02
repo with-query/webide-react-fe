@@ -26,8 +26,8 @@ const ChatMessage = ({ message, isOwn, showTime }) => {
           px="3"
           py="1"
           borderRadius="md"
-          bg="gray.100" // 시스템 메시지 배경색
-          display="flex" // 시간과 내용을 한 줄에 정렬하기 위해 Flex 사용
+          bg="none" // 시스템 메시지 배경색
+          display="flex" 
           alignItems="center"
           gap="2" // 내용과 시간 사이 간격
         >
@@ -52,7 +52,7 @@ const ChatMessage = ({ message, isOwn, showTime }) => {
       width="100%" 
     >
       <Box
-        bg={isOwn ? 'blue.500' : 'gray.200'} 
+        bg={isOwn ? 'orange.500' : 'gray.200'} 
         color={isOwn ? 'white' : 'gray.800'}
         px="4"
         py="2"
