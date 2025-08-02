@@ -63,19 +63,19 @@ import { useTranslation } from "react-i18next";
 // const BASE_URL = 'http://localhost:8080'; // <-- 이 줄은 더 이상 필요 없음
 
 const formatRoomName = (roomId) => {
-  if (roomId.startsWith('user-')) {
-    return roomId.replace('user-', '');
-  }
-  return roomId;
+ if (roomId.startsWith('user-')) {
+  return roomId.replace('user-', '');
+    }
+  return roomId;
 };
 
 // projectId prop은 ChatLayout에서 사용되지 않으므로 제거하거나,
 // ChatList의 역할이 특정 프로젝트의 채팅 목록이 아니라 "모든 채팅방" 목록이라면
 // 이 props는 필요 없습니다.
 const ChatList = () => { // projectId prop 제거
-  // ChatContext에서 모든 방의 메시지 상태와 방 선택 함수를 가져옵니다.
-  const { messages, setSelectedRoom, allAvailableRooms } = useChat(); // allAvailableRooms 추가 (ChatLayout에서 가져와 ChatContext에 전달해야 할 수도)
-  const { t } = useTranslation();
+ // ChatContext에서 모든 방의 메시지 상태와 방 선택 함수를 가져옵니다.
+ const { messages, setSelectedRoom, allAvailableRooms } = useChat(); // allAvailableRooms 추가 (ChatLayout에서 가져와 ChatContext에 전달해야 할 수도)
+ const { t } = useTranslation();
 
   // ChatList에서는 더 이상 직접 채팅 히스토리를 로드할 필요가 없습니다.
   // 이 로직은 ChatContext의 connectWebSocket/fetchRecentMessages에서 이미 처리됩니다.

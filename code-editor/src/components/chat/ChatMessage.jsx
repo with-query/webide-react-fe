@@ -1,78 +1,172 @@
-/*
-import { Box, Text } from '@chakra-ui/react';
+/*import { Box, Text, Flex } from '@chakra-ui/react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'; 
+import localizedFormat from 'dayjs/plugin/localizedFormat'; 
 
-const ChatMessage = ({ message, isOwn }) => {
+dayjs.extend(utc); // UTC 플러그인 다시 활성화
+dayjs.extend(localizedFormat); 
+
+const ChatMessage = ({ message, isOwn, showTime }) => {
+  // 메시지 타임스탬프를 HH:mm 형식으로 변환
   const displayTime = message.timestamp
     ? dayjs(message.timestamp).format('HH:mm')
-    : message.time;
+    : message.time; // message.time이 이미 포맷된 경우를 대비
 
+  // 1. 입장/퇴장 메시지 처리 (시스템 메시지)
+  if (message.type === 'JOIN' || message.type === 'LEAVE') {
+    return (
+      <Flex justify="center" width="100%" my="2">
+        <Text
+          fontSize="sm"
+          color="gray.500"
+          fontStyle="italic"
+          textAlign="center"
+          px="3"
+          py="1"
+          borderRadius="md"
+          bg="gray.100" // 시스템 메시지 배경색
+          display="flex" // 시간과 내용을 한 줄에 정렬하기 위해 Flex 사용
+          alignItems="center"
+          gap="2" // 내용과 시간 사이 간격
+        >
+          -- {message.content} --
+          {showTime && ( // showTime prop이 true일 때만 시간 표시
+            <Box as="span" fontSize="xs" color="gray.400">
+              {displayTime}
+            </Box>
+          )}
+        </Text>
+      </Flex>
+    );
+  }
+
+  // 2. 일반 채팅 메시지 (CHAT 타입)
   return (
     <Box
       display="flex"
-      flexDirection={isOwn ? 'row-reverse' : 'row'}
-      alignItems="flex-end"
+      flexDirection={isOwn ? 'row-reverse' : 'row'} // 본인 메시지는 오른쪽, 상대방은 왼쪽
+      alignItems="flex-end" // 시간과 메시지 버블을 하단에 정렬
       mb="2"
+      width="100%" // Flex 컨테이너가 전체 너비를 차지하도록
     >
-    
       <Box
-        bg={isOwn ? 'blue.100' : 'gray.100'}
-        color="black"
+        bg={isOwn ? 'blue.500' : 'gray.200'} // 본인 메시지는 파란색, 상대방은 회색
+        color={isOwn ? 'white' : 'gray.800'}
         px="4"
         py="2"
         borderRadius="lg"
-        maxWidth="60%"
+        maxWidth="60%" // 메시지 버블의 최대 너비
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        shadow="sm" // 그림자 추가
       >
-        <Text>{message.text}</Text>
+        {!isOwn && ( // 상대방 메시지에만 닉네임 표시
+          <Text fontSize="xs" fontWeight="bold" mb="1" color="gray.600">
+            {message.sender}
+          </Text>
+        )}
+        <Text fontSize="md">{message.text}</Text>
       </Box>
 
-      <Text
-        fontSize="xs"
-        color="gray.500"
-        mx="2"
-        mb="1"
-      >
-        {displayTime}
-      </Text>
+   
+      {showTime && ( // showTime prop이 true일 때만 시간 표시
+        <Text
+          fontSize="xs"
+          color="gray.500"
+          mx="2" // 메시지 버블과의 간격
+          mb="1" // 메시지 버블 하단과 정렬
+          alignSelf="flex-end" // Flex 아이템으로 하단 정렬
+        >
+          {displayTime}
+        </Text>
+      )}
     </Box>
   );
 };
 
 export default ChatMessage;
 */
-import { Box, Text } from '@chakra-ui/react';
+
+import { Box, Text, Flex } from '@chakra-ui/react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'; // dayjs UTC 플러그인 다시 임포트
+import localizedFormat from 'dayjs/plugin/localizedFormat'; 
+
+dayjs.extend(utc); // UTC 플러그인 다시 활성화
+dayjs.extend(localizedFormat); 
 
 const ChatMessage = ({ message, isOwn, showTime }) => {
+  // 메시지 타임스탬프를 UTC로 명시적으로 파싱한 후, 사용자 로컬 시간으로 변환하여 HH:mm 형식으로 표시
+  // 백엔드에서 시간대 정보 없이 UTC 시간을 보낼 경우 이 방식이 올바르게 작동합니다.
   const displayTime = message.timestamp
-    ? dayjs(message.timestamp).format('HH:mm')
-    : message.time;
+    ? dayjs.utc(message.timestamp).local().format('HH:mm') 
+    : ''; 
 
+  // 1. 입장/퇴장 메시지 처리 (시스템 메시지)
+  if (message.type === 'JOIN' || message.type === 'LEAVE') {
+    return (
+      <Flex justify="center" width="100%" my="2">
+        <Text
+          fontSize="sm"
+          color="gray.500"
+          fontStyle="italic"
+          textAlign="center"
+          px="3"
+          py="1"
+          borderRadius="md"
+          bg="gray.100" // 시스템 메시지 배경색
+          display="flex" // 시간과 내용을 한 줄에 정렬하기 위해 Flex 사용
+          alignItems="center"
+          gap="2" // 내용과 시간 사이 간격
+        >
+          -- {message.content || ''} -- 
+          {showTime && ( 
+            <Box as="span" fontSize="xs" color="gray.400">
+              {displayTime}
+            </Box>
+          )}
+        </Text>
+      </Flex>
+    );
+  }
+
+  // 2. 일반 채팅 메시지 (CHAT 타입)
   return (
     <Box
       display="flex"
-      flexDirection={isOwn ? 'row-reverse' : 'row'}
-      alignItems="flex-end"
+      flexDirection={isOwn ? 'row-reverse' : 'row'} 
+      alignItems="flex-end" 
       mb="2"
+      width="100%" 
     >
       <Box
-        bg={isOwn ? 'blue.100' : 'gray.100'}
-        color="black"
+        bg={isOwn ? 'blue.500' : 'gray.200'} 
+        color={isOwn ? 'white' : 'gray.800'}
         px="4"
         py="2"
         borderRadius="lg"
-        maxWidth="60%"
+        maxWidth="60%" 
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        shadow="sm" 
       >
-        <Text>{message.text}</Text>
+        {!isOwn && ( 
+          <Text fontSize="xs" fontWeight="bold" mb="1" color="gray.600">
+            {message.sender}
+          </Text>
+        )}
+        <Text fontSize="md">{message.text || ''}</Text> 
       </Box>
 
-      {/* 마지막 메시지일 때만 시간 표시 */}
-      {showTime && (
-        <Text fontSize="xs" color="gray.500" mx="2" mb="1">
+      {/* 시간 표시: 메시지 버블 옆에 작게 표시 */}
+      {showTime && ( 
+        <Text
+          fontSize="xs"
+          color="gray.500"
+          mx="2" 
+          mb="1" 
+          alignSelf="flex-end" 
+        >
           {displayTime}
         </Text>
       )}
