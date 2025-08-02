@@ -131,6 +131,15 @@ const resources = {
         "Please enter your message" : "메시지를 입력하세요.",
         "Please select a chatting " : "채팅방을 선택하세요.",
         "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." : "비밀번호는 최소 10자 이상이어야 하며 대문자, 소문자, 숫자, 특수문자를 1가지 이상 포함해야 합니다.",
+        
+        "PENDING" : "보류중",
+        "ACCEPTED" : "수락",
+        "Invited to" : "초대",
+        "Sent Invitations" : "보낸 초대 목록",
+        "No sent invitations." : "보낸 초대 내역이 없습니다.",
+        "Received Invitations" : "받은 초대 목록",
+        "No received invitations." : "받은 초대 내역이 없습니다.",
+        "Invited by" : "초대",
 
         },
     },
@@ -261,7 +270,16 @@ const resources = {
         "There is no chat history yet." : "There is no chat history yet.",
         "Please enter your message" : "Please enter your message",
         "Please select a chatting " : "Please select a chatting",
-        "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." : "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." 
+        "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." : "Password must be at least 10 characters long and include uppercase, lowercase, number, and special character." ,
+        
+        "PENDING" : "PENDING",
+        "ACCEPTED" : "ACCEPTED",
+        "Invited to" : "Invited to",
+        "Sent Invitations" : "Sent Invitations",
+        "No sent invitations." : "No sent invitations.",
+        "Received Invitations" : "Received Invitations",
+        "No received invitations." : "No received invitations.",
+        "Invited by" : "Invited by",
 
         },
     },

@@ -1,10 +1,10 @@
-import { Flex, Box, useToast } from '@chakra-ui/react'; // useToast 추가
-import { useNavigate } from 'react-router-dom'; // useNavigate 추가
-import axios from 'axios'; // axios import
-import { ChatProvider, useChat } from '../components/chat/context/ChatContext';
-import ChatSidebar from '../components/chat/ChatSidebar';
-import ChatWindow from '../components/chat/ChatWindow';
-import ChatList from '../components/chat/ChatList';
+import { Flex, Box, useToast } from '@chakra-ui/react'; // 오류: '@chakra-ui/react' 모듈을 찾을 수 없습니다. Chakra UI 라이브러리가 설치되었는지 확인해주세요. (예: npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion)
+import { useNavigate } from 'react-router-dom'; // 오류: 'react-router-dom' 모듈을 찾을 수 없습니다. React Router가 설치되었는지 확인해주세요. (예: npm install react-router-dom)
+import axios from 'axios'; // 오류: 'axios' 모듈을 찾을 수 없습니다. Axios 라이브러리가 설치되었는지 확인해주세요. (예: npm install axios)
+import { ChatProvider, useChat } from '../components/chat/context/ChatContext'; // 오류: '../components/chat/context/ChatContext' 경로를 찾을 수 없습니다. 파일 경로가 정확한지 확인해주세요.
+import ChatSidebar from '../components/chat/ChatSidebar'; // 오류: '../components/chat/ChatSidebar' 경로를 찾을 수 없습니다. 파일 경로가 정확한지 확인해주세요.
+import ChatWindow from '../components/chat/ChatWindow'; // 오류: '../components/chat/ChatWindow' 경로를 찾을 수 없습니다. 파일 경로가 정확한지 확인해주세요.
+import ChatList from '../components/chat/ChatList'; // 오류: '../components/chat/ChatList' 경로를 찾을 수 없습니다. 파일 경로가 정확한지 확인해주세요.
 import { useState, useEffect } from 'react';
 
 // BASE_URL은 Context에서 가져오거나, 앱 전역에서 관리되는 상수 사용을 권장합니다.
@@ -15,16 +15,12 @@ const ChatLayout = () => {
   const { selectedRoom, setSelectedRoom } = useChat();
   const [projectList, setProjectList] = useState([]);
   const [dmUserList, setDmUserList] = useState([]);
-  const toast = useToast(); // 토스트 훅
-  const navigate = useNavigate(); // 라우팅 훅
+  const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProjectsAndDmUsers = async () => {
-      // 로딩 상태는 ChatLayout에서는 UI로 표시하지 않을 것이므로 별도로 관리하지 않습니다.
-      // 다만, 네트워크 요청 중임을 나타내는 UI가 필요하면 추가할 수 있습니다.
-      // setError(null); // ChatLayout에서 에러 UI를 표시한다면 필요
-
-      const token = localStorage.getItem('token'); // 인증 토큰 가져오기 (DBConnect.jsx에서는 'token'으로 사용)
+      const token = localStorage.getItem('token');
 
       if (!token) {
         toast({
@@ -34,7 +30,7 @@ const ChatLayout = () => {
           duration: 3000,
           isClosable: true,
         });
-        navigate("/login"); // 로그인 페이지로 리디렉션
+        navigate("/login");
         return;
       }
 
@@ -67,7 +63,6 @@ const ChatLayout = () => {
         console.error("채팅 관련 데이터 로드 중 오류 발생:", err);
         const errorMessage =
           err.response?.data?.message || "채팅 데이터를 로드하는 데 실패했습니다. 다시 시도해주세요.";
-        // setError(errorMessage); // ChatLayout에서 에러 UI를 표시한다면 필요
         toast({
           title: "데이터 로딩 실패",
           description: errorMessage,
@@ -78,14 +73,14 @@ const ChatLayout = () => {
 
         // 인증 오류 (401 Unauthorized, 403 Forbidden) 처리
         if (err.response?.status === 401 || err.response?.status === 403) {
-          localStorage.removeItem("token"); 
+          localStorage.removeItem("token");
           navigate("/login");
         }
       }
     };
 
     fetchProjectsAndDmUsers();
-  }, [toast, navigate]); // 의존성 배열에 toast와 navigate 추가
+  }, [toast, navigate]);
 
   // availableRooms는 이제 projectList와 dmUserList에서 가져옵니다.
   const allAvailableRooms = [

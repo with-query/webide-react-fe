@@ -1,4 +1,3 @@
-
 import {
   Modal,
   ModalOverlay,
@@ -15,39 +14,40 @@ import {
   Flex,
   useToast,
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react"; // useEffect 추가
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import useAuth from "../AuthService";
 
 const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSuccess }) => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { login } = useAuth(); // useAuth 훅에서 login 함수 가져오기
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rememberEmail, setRememberEmail] = useState(false); // '아이디 저장' 상태 추가
+  const [rememberEmail, setRememberEmail] = useState(false);
 
   const BASE_URL = "http://20.196.89.99:8080";
 
-  // 모달이 열릴 때 localStorage에서 저장된 이메일을 불러옵니다.
   useEffect(() => {
     if (isOpen) {
       const savedEmail = localStorage.getItem("savedEmail");
       if (savedEmail) {
         setEmail(savedEmail);
-        setRememberEmail(true); // 저장된 이메일이 있으면 체크박스도 체크된 상태로 시작
+        setRememberEmail(true);
       } else {
-        setEmail(""); // 저장된 이메일이 없으면 초기화
-        setRememberEmail(false); // 체크박스도 해제
+        setEmail("");
+        setRememberEmail(false);
       }
-      setPassword(""); // 모달이 열릴 때마다 비밀번호는 항상 비웁니다.
+      setPassword("");
     }
-  }, [isOpen]); // isOpen이 변경될 때마다 이펙트 실행
+  }, [isOpen]);
 
   const handleLogin = async () => {
     if (!email || !password) {
       toast({
-        title: t("Please enter your email and password."), // 번역 적용
+        title: t("Please enter your email and password."),
         status: "warning",
         duration: 3000,
         isClosable: true,
@@ -68,11 +68,11 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
       const data = await res.json();
 
       if (res.ok) {
-        // ✅ 토큰과 닉네임을 localStorage에 저장
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("nickname", data.nickname);
+        // 서버에서 액세스 토큰과 함께 만료 시간을 'expiresIn' 필드로 받아온다고 가정
+        // 예를 들어, data.expiresIn = 3600 (초)
+        const expiresInSeconds = data.expiresIn || (60 * 60); // 기본값 1시간 (3600초)
+        login(data.token, data.nickname, expiresInSeconds); // useAuth의 login 함수 호출
 
-        // '아이디 저장' 체크박스 상태에 따라 이메일을 localStorage에 저장 또는 삭제
         if (rememberEmail) {
           localStorage.setItem("savedEmail", email);
         } else {
@@ -80,17 +80,17 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
         }
 
         toast({
-          title: data.message || t("Login successful"), // 번역 적용
+          title: data.message || t("Login successful"),
           status: "success",
           duration: 3000,
           isClosable: true,
         });
 
-        onLoginSuccess(data); // 필요 시 상위 컴포넌트로 전달
+        onLoginSuccess(data);
         onClose();
       } else {
         toast({
-          title: data.message || t("Login failed"), // 번역 적용
+          title: data.message || t("Login failed"),
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -98,7 +98,7 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
       }
     } catch (err) {
       toast({
-        title: t("A server error occurred."), // 번역 적용
+        title: t("A server error occurred."),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -178,5 +178,4 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
     </Modal>
   );
 };
-
 export default LoginModal;
