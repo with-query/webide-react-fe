@@ -15,6 +15,7 @@ const resources = {
         "My Page": "마이페이지",
         "DBConnect" : "DB 연결",
 
+        "Run Code" : "실행",
         "Email or Username": "이메일 또는 아이디",
         "Name": "이름",
         "Password": "비밀번호",
@@ -155,6 +156,7 @@ const resources = {
         "My Page": "My Page",
         "DBConnect" : "DBConnect",
 
+        "Run Code" : "Run Code",
         "Email or Username": "Email or Username",
         "Name": "Name",
         "Password": "Password",

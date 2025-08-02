@@ -256,7 +256,8 @@ const Dashboard = () => {
                     duration: 3000,
                     isClosable: true,
                 });
-                navigate(`/editor/${newProject.id}`);
+                // ✅ 생성 후, 마지막 작업 공간으로 이동하는 로직을 호출합니다.
+                handleOpenProject(newProject.id);
 
             } else {
                 toast({
@@ -266,7 +267,8 @@ const Dashboard = () => {
                     isClosable: true,
                 });
                 console.log("DB 연결 없이 프로젝트만 생성되었습니다. 에디터로 이동합니다.");
-                navigate(`/editor/${newProject.id}`);
+                 // ✅ 생성 후, 마지막 작업 공간으로 이동하는 로직을 호출합니다.
+                handleOpenProject(newProject.id);
             }
 
             if (data.invitedEmails && data.invitedEmails.length > 0) {
@@ -284,7 +286,6 @@ const Dashboard = () => {
             });
         }
     };
-
 
     const handleSaveProject = async (updatedData) => {
         const token = localStorage.getItem("token");
@@ -405,10 +406,23 @@ const Dashboard = () => {
         }
         setIsCreateModalOpen(true);
     };
-
+    
+    // --- START: 로직 수정 ---
+    // 기존 handleOpenProject 함수의 내용을 아래와 같이 변경합니다.
     const handleOpenProject = (projectId) => {
-        navigate(`/editor/${projectId}`);
+        // 1. 로컬 스토리지에서 해당 프로젝트의 마지막 방문 탭 정보를 가져옵니다.
+        const lastVisitedTab = localStorage.getItem(`lastVisitedTab_${projectId}`);
+
+        // 2. 마지막 방문 기록이 'query-builder'이면 해당 경로로 이동합니다.
+        if (lastVisitedTab === 'query-builder') {
+            navigate(`/query-builder/${projectId}`);
+        } 
+        // 3. 방문 기록이 없거나 'ide'일 경우, 기본값인 IDE 페이지로 이동합니다.
+        else {
+            navigate(`/editor/${projectId}`);
+        }
     };
+    // --- END: 로직 수정 ---
 
     const handleSelectProject = (id) => {
         setSelectedProjectId(id);
@@ -493,6 +507,7 @@ const Dashboard = () => {
                             ) : (
                                 <ul className="projects-list">
                                     {projects.map((project) => (
+                                        // ✅ 이 부분의 onClick이 handleOpenProject를 호출하는지 확인합니다.
                                         <li key={project.id} className="project-card" onClick={() => handleOpenProject(project.id)}>
                                             <div className="project-card-content">
                                                 <h3 className="project-card-name">{project.name}</h3>

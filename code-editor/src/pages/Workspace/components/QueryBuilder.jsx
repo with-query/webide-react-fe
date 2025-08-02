@@ -7,47 +7,46 @@ import TableNode from './TableNode';
 import { generateSql } from '@/components/utils/sqlGenerator';
 
 const getOrthogonalPath = (from, to, nodes, nodeRefs, containerRef) => {
-  // ... (이 함수는 수정할 필요 없음, 그대로 두세요) ...
   const fromNodeRef = nodeRefs.current[from.fromNodeId];
-  const toNodeRef = nodeRefs.current[to.toNodeId];
-  if (!from?.ref?.current || !to?.ref?.current || !fromNodeRef || !toNodeRef) return null;
+  const toNodeRef = nodeRefs.current[to.toNodeId];
+  if (!from?.ref?.current || !to?.ref?.current || !fromNodeRef || !toNodeRef) return null;
 
-  const container = containerRef.current;
-  if (!container) return null;
+  const container = containerRef.current;
+  if (!container) return null;
 
-  const fromNode = nodes[from.fromNodeId];
-  const toNode = nodes[to.toNodeId];
-  if (!fromNode || !toNode) return null;
+  const fromNode = nodes[from.fromNodeId];
+  const toNode = nodes[to.toNodeId];
+  if (!fromNode || !toNode) return null;
 
-  const scrollTop = container.scrollTop;
-  const scrollLeft = container.scrollLeft;
-  const containerRect = container.getBoundingClientRect();
-  const fromNodeRect = fromNodeRef.getBoundingClientRect();
-  const toNodeRect = toNodeRef.getBoundingClientRect();
-  const fromColumnRect = from.ref.current.getBoundingClientRect();
-  const toColumnRect = to.ref.current.getBoundingClientRect();
+  const scrollTop = container.scrollTop;
+  const scrollLeft = container.scrollLeft;
+  const containerRect = container.getBoundingClientRect();
+  const fromNodeRect = fromNodeRef.getBoundingClientRect();
+  const toNodeRect = toNodeRef.getBoundingClientRect();
+  const fromColumnRect = from.ref.current.getBoundingClientRect();
+  const toColumnRect = to.ref.current.getBoundingClientRect();
 
-  const isTargetRight = (toNodeRect.left + toNodeRect.width / 2) > (fromNodeRect.left + fromNodeRect.width / 2);
+  const isTargetRight = (toNodeRect.left + toNodeRect.width / 2) > (fromNodeRect.left + fromNodeRect.width / 2);
 
-  const startPoint = {
-    x: (isTargetRight ? fromNodeRect.right : fromNodeRect.left) - containerRect.left + scrollLeft,
-    y: (fromColumnRect.top + fromColumnRect.height / 2) - containerRect.top + scrollTop,
-  };
-  const endPoint = {
-    x: (isTargetRight ? toNodeRect.left : toNodeRect.right) - containerRect.left + scrollLeft,
-    y: (toColumnRect.top + toColumnRect.height / 2) - containerRect.top + scrollTop,
-  };
+  const startPoint = {
+    x: (isTargetRight ? fromNodeRect.right : fromNodeRect.left) - containerRect.left + scrollLeft,
+    y: (fromColumnRect.top + fromColumnRect.height / 2) - containerRect.top + scrollTop,
+  };
+  const endPoint = {
+    x: (isTargetRight ? toNodeRect.left : toNodeRect.right) - containerRect.left + scrollLeft,
+    y: (toColumnRect.top + toColumnRect.height / 2) - containerRect.top + scrollTop,
+  };
 
-  const threshold = 5;
-  const yDifference = Math.abs(startPoint.y - endPoint.y);
+  const threshold = 5;
+  const yDifference = Math.abs(startPoint.y - endPoint.y);
 
-  if (yDifference < threshold && isTargetRight) {
-    return `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
-  }
-  
-  const offset = 40;
-  const midPointX = startPoint.x + (isTargetRight ? offset : -offset);
-  return `M ${startPoint.x} ${startPoint.y} H ${midPointX} V ${endPoint.y} H ${endPoint.x}`;
+  if (yDifference < threshold && isTargetRight) {
+    return `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+  }
+  
+  const offset = 40;
+  const midPointX = startPoint.x + (isTargetRight ? offset : -offset);
+  return `M ${startPoint.x} ${startPoint.y} H ${midPointX} V ${endPoint.y} H ${endPoint.x}`;
 };
 
 // ❗️❗️❗️ 여기부터 중요합니다. props를 모두 받아오도록 수정 ❗️❗️❗️
@@ -56,7 +55,9 @@ const QueryBuilder = ({
   nodes, setNodes,
   connections, setConnections,
   whereClauses, setWhereClauses,
-  setSqlQuery
+  setSqlQuery,
+  onDeleteConnection, // Workspace에서 전달받는 prop 추가
+  onUpdateNodeColumn // Workspace에서 전달받는 prop 추가
 }) => {
   console.log("---[QueryBuilder 시작] Props로 받은 Nodes:", Object.keys(nodes).length);
 
@@ -98,7 +99,7 @@ const QueryBuilder = ({
       // ✨ 부모(Workspace)의 상태를 업데이트합니다.
       setConnections(prev => [...prev, { from, to, id: Math.random().toString() }]);
     }
-  }, [connections, setConnections]); // ✨ setConnections 의존성 추가
+  }, [connections, setConnections]);
 
   const handleNodeDrag = useCallback((dragInfo) => {
     setDraggedNode(dragInfo);
@@ -133,10 +134,22 @@ const QueryBuilder = ({
         const newAlias = item.name.charAt(0).toLowerCase() + (Object.keys(nodes).length + 1);
         // ✨ 부모(Workspace)의 상태를 업데이트합니다.
         console.log(`---[QueryBuilder 드롭] ${item.name} 테이블 추가 시도!`);
-        setNodes(prev => ({ ...prev, [item.id]: { ...item, left, top, alias: newAlias } }));
+        // 테이블을 추가할 때 컬럼 정보도 함께 포함시켜야 합니다.
+        // dbSchema에서 해당 테이블의 컬럼 정보를 찾아 추가합니다.
+        const tableSchema = dbSchema?.tables?.find(t => t.id === item.id);
+        setNodes(prev => ({
+          ...prev,
+          [item.id]: {
+            ...item,
+            left,
+            top,
+            alias: newAlias,
+            columns: tableSchema ? tableSchema.columns : [] // dbSchema에서 컬럼 정보 가져오기
+          }
+        }));
       }
     },
-  }), [nodes, setNodes]); // ✨ setNodes 의존성 추가
+  }), [nodes, setNodes, dbSchema]); // ✨ setNodes와 dbSchema 의존성 추가
 
   const handleNodeContextMenu = (e, nodeId) => {
     e.preventDefault();
@@ -163,18 +176,9 @@ const QueryBuilder = ({
     setEditingNodeId(null);
   };
 
-  // ... 이하 컬럼명, 타입 변경 핸들러들도 모두 setNodes(props로 받은 함수)를 사용하므로 수정할 필요 없습니다 ...
   const handleColumnTypeChange = (nodeId, columnName, newType) => {
-    setNodes(prev => {
-      const newNodes = JSON.parse(JSON.stringify(prev));
-      const targetNode = newNodes[nodeId];
-      if (targetNode) {
-        targetNode.columns = targetNode.columns.map(col => 
-          col.name === columnName ? { ...col, type: newType } : col
-        );
-      }
-      return newNodes;
-    });
+    // ✨ 부모(Workspace)의 onUpdateNodeColumn prop을 호출하여 컬럼 타입 업데이트
+    onUpdateNodeColumn(nodeId, { name: columnName, type: newType });
   };
 
   const handleColumnNameChange = (nodeId, oldName, newName) => {
@@ -182,20 +186,21 @@ const QueryBuilder = ({
       setEditingColumnName(null);
       return;
     }
-    setNodes(prev => {
-      const newNodes = JSON.parse(JSON.stringify(prev));
-      const targetNode = newNodes[nodeId];
-      if (targetNode) {
-        targetNode.columns = targetNode.columns.map(col =>
-          col.name === oldName ? { ...col, name: newName } : col
-        );
-      }
-      return newNodes;
-    });
+    // ✨ 부모(Workspace)의 onUpdateNodeColumn prop을 호출하여 컬럼 이름 업데이트
+    // 기존 컬럼을 찾아서 이름만 변경하는 로직은 Workspace에서 처리됩니다.
+    onUpdateNodeColumn(nodeId, { name: newName, oldName: oldName }); // oldName을 전달하여 Workspace에서 찾을 수 있도록
     setEditingColumnName(null);
   };
 
-  // ... 이하 return 문은 수정할 필요 없음 ...
+  // 새로운 컬럼 추가 핸들러 (TableNode에서 호출될 예정)
+  const handleAddColumn = useCallback((nodeId, newColumnName, newColumnType) => {
+    // 새로운 컬럼 객체 생성
+    const newColumn = { name: newColumnName, type: newColumnType || 'VARCHAR', pk: false, fk: false };
+    // Workspace의 onUpdateNodeColumn 함수를 호출하여 컬럼 추가
+    onUpdateNodeColumn(nodeId, newColumn);
+  }, [onUpdateNodeColumn]);
+
+
   return (
     <Box p={4} height="100%" display="flex" flexDirection="column" bg="brand.100">
       <Box
@@ -234,7 +239,17 @@ const QueryBuilder = ({
               containerRef
             );
             if (!pathData) return null;
-            return <path key={conn.id} d={pathData} stroke="#A0AEC0" strokeWidth="2" fill="none" />;
+            return (
+              <path
+                key={conn.id}
+                d={pathData}
+                stroke="#A0AEC0"
+                strokeWidth="2"
+                fill="none"
+                style={{ pointerEvents: 'auto', cursor: 'pointer' }} // 클릭 가능하도록 설정
+                onDoubleClick={() => onDeleteConnection(conn.id)} // 더블 클릭 이벤트 핸들러 추가
+              />
+            );
           })}
         </svg>
 
@@ -256,6 +271,8 @@ const QueryBuilder = ({
             editingColumnType={editingColumnType}
             onStartColumnTypeEdit={setEditingColumnType}
             onColumnTypeChange={handleColumnTypeChange}
+            onAddColumn={handleAddColumn} // TableNode로 컬럼 추가 핸들러 전달
+            onUpdateNodeColumn={onUpdateNodeColumn} // TableNode로 컬럼 업데이트 핸들러 전달
           />
         ))}
 
