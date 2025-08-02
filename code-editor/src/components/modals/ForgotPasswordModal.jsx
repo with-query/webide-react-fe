@@ -18,6 +18,7 @@ import { useState } from "react"; // useState 추가
 
 const BASE_URL = "http://20.196.89.99:8080"; // API 기본 URL
 
+
 const ForgotPasswordModal = ({ isOpen, onClose, onOpenLogin }) => {
   const { t } = useTranslation();
   const toast = useToast(); // 토스트 메시지 훅 초기화

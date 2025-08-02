@@ -62,13 +62,23 @@ const MessageInput = ({ onSend }) => {
                 handleSend();
                 }
             }}
+            _focus={{
+              borderColor: 'orange.500', 
+              boxShadow: '0 0 0 1px orange.500', 
+            }}     
         />
 
       <IconButton
         icon={<FiSend />}
         onClick={handleSend}
-        colorScheme="blue"
+        background="#d57239"
+        colorScheme='orange.500'
         aria-label="전송"
+        _focus={{
+              borderColor: 'orange.500', 
+              boxShadow: '0 0 0 1px orange.500', 
+            }}  
+        
       />
     </HStack>
   );

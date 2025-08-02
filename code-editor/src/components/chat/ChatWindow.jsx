@@ -1,68 +1,151 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Text, VStack } from '@chakra-ui/react';
-import ChatMessage from './ChatMessage'; // ChatMessage 컴포넌트가 필요합니다.
-import ChatDateDivider from './ChatDateDivider'; // ChatDateDivider 컴포넌트가 필요합니다.
-import MessageInput from './MessageInput'; // MessageInput 컴포넌트가 필요합니다.
-import ChatHeader from './ChatHeader'; // ChatHeader 컴포넌트가 필요합니다.
-import ChatRoomMenu from './ChatRoomMenu'; // ChatRoomMenu 컴포넌트가 필요합니다.
-import { useChat } from './context/ChatContext';
-const ChatWindow = ({ selectedRoom, onBack, onLeaveRoom }) => {
-  // ChatContext에서 메시지 목록과 메시지 전송 함수를 가져옵니다.
-  const { messages, sendMessage } = useChat();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [roomMembers, setRoomMembers] = useState({}); // 각 방의 멤버 정보를 저장
+import { Box, Text, VStack, useToast } from '@chakra-ui/react';
+import ChatMessage from './ChatMessage';
+import ChatDateDivider from './ChatDateDivider';
+import MessageInput from './MessageInput';
+import ChatHeader from './ChatHeader';
+import ChatRoomMenu from './ChatRoomMenu';
+import { useChat, BASE_URL } from './context/ChatContext';
+import axios from 'axios';
+import "../../styles/Chat.css";
+import dayjs from 'dayjs';
 
-  // 메시지 전송 핸들러: ChatContext의 sendMessage 함수를 호출합니다.
+
+const ChatWindow = ({ selectedRoom, onBack, onLeaveRoom }) => {
+  const { messages, sendMessage, currentUserInfo, currentRoomMembers } = useChat();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [roomMembers, setRoomMembers] = useState({}); 
+  const messagesEndRef = useRef(null);
+  const toast = useToast();
+
   const handleSend = (messageContent) => {
+    if (!currentUserInfo) {
+      toast({
+        title: "사용자 정보 로딩 중",
+        description: "잠시 후 다시 시도해주세요.",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
     sendMessage(messageContent);
   };
 
+  useEffect(() => {
+    const fetchRoomMembers = async () => {
+      if (!selectedRoom || selectedRoom.type !== 'project') {
+        setRoomMembers(prev => ({ ...prev, [selectedRoom?.id]: [] }));
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast({
+          title: "인증 필요",
+          description: "방 멤버를 불러오려면 로그인이 필요합니다.",
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      try {
+        const projectId = selectedRoom.id.replace('project-', '');
+        const response = await axios.get(`${BASE_URL}/api/projects/${projectId}/members`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        // --- 디버깅 로그 추가 시작 ---
+        console.log(`[DEBUG] 프로젝트 ${projectId}의 원본 멤버 데이터:`, response.data);
+        const fetchedMembers = response.data.map(member => {
+          console.log(`[DEBUG] 개별 멤버 객체:`, member); // 각 멤버 객체의 구조 확인
+          return member.userName; // 'nickname' 대신 'userName'으로 수정했습니다.
+        });
+        // --- 디버깅 로그 추가 끝 ---
+
+        console.log(`프로젝트 ${projectId}의 멤버 목록:`, fetchedMembers);
+
+        setRoomMembers(prev => ({
+          ...prev,
+          [selectedRoom.id]: fetchedMembers
+        }));
+      } catch (error) {
+        console.error(`프로젝트 ${selectedRoom.id} 멤버 로드 실패:`, error);
+        toast({
+          title: "멤버 로드 실패",
+          description: "채팅방 멤버를 불러오는 데 실패했습니다.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    };
+
+    fetchRoomMembers();
+  }, [selectedRoom, toast]);
 
   useEffect(() => {
-    if (selectedRoom) {
-      // 이 부분에서 selectedRoom에 해당하는 멤버 목록을 API로 가져와서 setRoomMembers를 호출해야 합니다.
-      
-      setRoomMembers(prev => ({
-        ...prev,
-        [selectedRoom]: ['테스트멤버1', '테스트멤버2', '테스트멤버3']
-      }));
-    }
-  }, [selectedRoom]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
+  const renderMessagesWithDividers = () => {
+    let lastDisplayedDate = null;
+    const renderedElements = [];
+
+    messages.forEach((msg, index) => {
+      const messageDate = dayjs(msg.timestamp).format('YYYY년 M월 D일');
+
+      if (messageDate !== lastDisplayedDate) {
+        renderedElements.push(
+          <ChatDateDivider key={`date-${messageDate}`} date={messageDate} />
+        );
+        lastDisplayedDate = messageDate;
+      }
+
+      const showTimeForMessage = true; 
+
+      renderedElements.push(
+        <ChatMessage
+          key={msg.id || index}
+          message={msg}
+          isOwn={msg.isOwn}
+          showTime={showTimeForMessage}
+        />
+      );
+    });
+    return renderedElements;
+  };
 
   return (
     <Box p={4} bg="white" borderRadius="md" shadow="sm" height="100%" display="flex" flexDirection="column">
       <ChatHeader
-        roomName={selectedRoom ? selectedRoom.split('-')[1] || selectedRoom : '채팅방'} 
+        title={selectedRoom ? selectedRoom.name : '채팅방'}
         onBack={onBack}
-        onMenuOpen={() => setIsMenuOpen(true)}
+        onOpenMenu={() => setIsMenuOpen(true)}
       />
 
-      {/* 메시지 목록 */}
       <VStack spacing={2} align="stretch" overflowY="auto" flex="1" my={4}>
         {messages.length === 0 && selectedRoom && (
-          <Text>아직 메시지가 없습니다.</Text>
+          <Text textAlign="center" color="gray.500">
+            아직 메시지가 없습니다.
+          </Text>
         )}
-        {messages.map((msg, index) => (
-          
-          <ChatMessage
-            key={msg.id || index} 
-            message={msg}
-            isOwn={msg.isOwn} 
-          />
-        ))}
+        {renderMessagesWithDividers()}
+        <div ref={messagesEndRef} />
       </VStack>
 
-      {/* MessageInput 및 ChatRoomMenu 관련 UI */}
       {selectedRoom && (
         <>
           <MessageInput onSend={handleSend} />
           <ChatRoomMenu
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
-            roomName={selectedRoom}
-            members={roomMembers[selectedRoom] || []} 
-            onLeave={onLeaveRoom} 
+            roomName={selectedRoom.name}
+            //members={roomMembers[selectedRoom.id] || [currentRoomMembers]} 
+            members={currentRoomMembers} 
+            onLeave={() => onLeaveRoom(selectedRoom.id)}
           />
         </>
       )}
