@@ -1,124 +1,4 @@
-/*import { Flex, Box, useToast } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { ChatProvider, useChat } from '../components/chat/context/ChatContext';
-import ChatSidebar from '../components/chat/ChatSidebar';
-import ChatWindow from '../components/chat/ChatWindow';
-import ChatList from '../components/chat/ChatList';
-import { useState, useEffect } from 'react';
-
-// HTTP API 호출을 위한 기본 URL입니다. 웹소켓 연결과는 별개로 사용됩니다.
-const BASE_URL = "http://20.196.89.99:8080";
-
-const ChatLayout = () => {
-  const { selectedRoom, setSelectedRoom } = useChat();
-  const [projectList, setProjectList] = useState([]);
-  const [dmUserList, setDmUserList] = useState([]);
-  const toast = useToast();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProjectsAndDmUsers = async () => {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        toast({
-          title: "인증 필요",
-          description: "채팅 기능을 사용하려면 로그인이 필요합니다.",
-          status: "info",
-          duration: 3000,
-          isClosable: true,
-        });
-        navigate("/login");
-        return;
-      }
-
-      try {
-        // 프로젝트 목록 가져오기 (HTTP API 사용)
-        const projectsRes = await axios.get(`${BASE_URL}/api/projects`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const fetchedProjects = projectsRes.data;
-        console.log("API에서 불러온 프로젝트 목록:", fetchedProjects);
-
-        const formattedProjects = fetchedProjects.map(project => ({
-          id: `project-${project.id}`, // 웹소켓 방 이름 형식에 맞춤
-          name: project.name, // 사이드바에 표시될 이름
-        }));
-        setProjectList(formattedProjects);
-
-        // TODO: DM 사용자 목록도 API로 가져올 예정이라면 여기에 axios.get 호출 추가
-        // 현재는 DM 사용자 목록 목업 데이터 유지 (API 연동 전까지)
-        setDmUserList([
-          { id: 'user-hong', name: '홍길동', type: 'user' },
-          { id: 'user-kim', name: '김개발', type: 'user' }
-        ]);
-
-      } catch (err) {
-        console.error("채팅 관련 데이터 로드 중 오류 발생:", err);
-        const errorMessage =
-          err.response?.data?.message || "채팅 데이터를 로드하는 데 실패했습니다. 다시 시도해주세요.";
-        toast({
-          title: "데이터 로딩 실패",
-          description: errorMessage,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-
-        // 인증 오류 (401 Unauthorized, 403 Forbidden) 처리
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          localStorage.removeItem("token");
-          navigate("/login");
-        }
-      }
-    };
-
-    fetchProjectsAndDmUsers();
-  }, [toast, navigate]);
-
-  // availableRooms는 이제 projectList와 dmUserList에서 가져옵니다.
-  const allAvailableRooms = [
-    ...projectList.map(p => ({ id: p.id, name: p.name, type: 'project' })),
-    ...dmUserList.map(u => ({ id: u.id, name: u.name, type: 'user' }))
-  ];
-
-  const handleLeaveRoom = (roomId) => {
-    if (selectedRoom === roomId) {
-      setSelectedRoom(null);
-    }
-  };
-
-  return (
-    <Flex height="90vh" bg="#f9f8f6" color="text.primary">
-      <ChatSidebar
-        onSelectRoom={setSelectedRoom}
-        selectedRoom={selectedRoom}
-        availableRooms={allAvailableRooms} // 동적으로 불러온 프로젝트와 DM 사용자 목록 전달
-      />
-      <Box flex="1">
-        {selectedRoom ? (
-          <ChatWindow
-            selectedRoom={selectedRoom}
-            onBack={() => setSelectedRoom(null)}
-            onLeaveRoom={handleLeaveRoom}
-          />
-        ) : (
-          <ChatList />
-        )}
-      </Box>
-    </Flex>
-  );
-};
-
-const ChatPage = () => (
-  <ChatProvider>
-    <ChatLayout />
-  </ChatProvider>
-);
-
-export default ChatPage;*/
+/*
 import { Flex, Box, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -224,6 +104,127 @@ const ChatLayout = () => {
         {selectedRoom ? (
           <ChatWindow
             selectedRoom={selectedRoom} // selectedRoom이 이제 객체
+            onBack={() => setSelectedRoom(null)}
+            onLeaveRoom={handleLeaveRoom}
+          />
+        ) : (
+          <ChatList />
+        )}
+      </Box>
+    </Flex>
+  );
+};
+
+const ChatPage = () => (
+  <ChatProvider>
+    <ChatLayout />
+  </ChatProvider>
+);
+
+export default ChatPage;
+*/
+import { Flex, Box, useToast } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { ChatProvider, useChat, BASE_URL } from '../components/chat/context/ChatContext'; // BASE_URL 임포트
+import ChatSidebar from '../components/chat/ChatSidebar';
+import ChatWindow from '../components/chat/ChatWindow';
+import ChatList from '../components/chat/ChatList';
+import { useState, useEffect } from 'react';
+
+const ChatLayout = () => {
+  const { selectedRoom, setSelectedRoom, leaveChatRoom } = useChat(); // leaveChatRoom 추가
+  const [projectList, setProjectList] = useState([]);
+  const [dmUserList, setDmUserList] = useState([]);
+  const toast = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProjectsAndDmUsers = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        toast({
+          title: "인증 필요",
+          description: "채팅 기능을 사용하려면 로그인이 필요합니다.",
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+        });
+        navigate("/login");
+        return;
+      }
+
+      try {
+        // 프로젝트 목록 가져오기 (HTTP API 사용)
+        const projectsRes = await axios.get(`${BASE_URL}/api/projects`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const fetchedProjects = projectsRes.data;
+        console.log("API에서 불러온 프로젝트 목록:", fetchedProjects);
+
+        const formattedProjects = fetchedProjects.map(project => ({
+          id: `project-${project.id}`, // 웹소켓 방 이름 형식에 맞춤
+          name: project.name, // 사이드바에 표시될 이름
+          type: 'project' // 타입 추가
+        }));
+        setProjectList(formattedProjects);
+
+        // TODO: DM 사용자 목록도 API로 가져올 예정이라면 여기에 axios.get 호출 추가
+        // 현재는 DM 사용자 목록 목업 데이터 유지 (API 연동 전까지)
+        setDmUserList([
+          { id: 'user-hong', name: '홍길동', type: 'user' },
+          { id: 'user-kim', name: '김개발', type: 'user' }
+        ]);
+
+      } catch (err) {
+        console.error("채팅 관련 데이터 로드 중 오류 발생:", err);
+        const errorMessage =
+          err.response?.data?.message || "채팅 데이터를 로드하는 데 실패했습니다. 다시 시도해주세요.";
+        toast({
+          title: "데이터 로딩 실패",
+          description: errorMessage,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        // 인증 오류 (401 Unauthorized, 403 Forbidden) 처리
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      }
+    };
+
+    fetchProjectsAndDmUsers();
+  }, [toast, navigate]);
+
+  const allAvailableRooms = [
+    ...projectList,
+    ...dmUserList
+  ];
+
+  const handleLeaveRoom = (roomId) => {
+    // leaveChatRoom 함수는 ChatContext에서 제공됩니다.
+    // selectedRoom이 객체이므로, ID를 추출하여 leaveChatRoom에 전달
+    if (selectedRoom && selectedRoom.id === roomId) {
+      leaveChatRoom(roomId);
+    }
+  };
+
+  return (
+    <Flex height="90vh" bg="#f9f8f6" color="text.primary">
+      <ChatSidebar
+        onSelectRoom={setSelectedRoom}
+        selectedRoom={selectedRoom}
+        availableRooms={allAvailableRooms}
+      />
+      <Box flex="1">
+        {selectedRoom ? (
+          <ChatWindow
+            selectedRoom={selectedRoom}
             onBack={() => setSelectedRoom(null)}
             onLeaveRoom={handleLeaveRoom}
           />

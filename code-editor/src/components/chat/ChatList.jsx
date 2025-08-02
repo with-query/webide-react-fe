@@ -1,66 +1,8 @@
-/*import { VStack, Text, Box } from '@chakra-ui/react';
-import { useChat } from './context/ChatContext';
-import { useTranslation } from "react-i18next";
 
-const formatRoomName = (roomId) => {
-  if (roomId.startsWith('user-')) {
-    return roomId.replace('user-', ''); // 1:1 채팅은 이름만 표시
-  }
-  return roomId; // 프로젝트 채팅방은 그대로
-};
-// 최근 채팅 목록 조회
-
-const ChatList = () => {
-  const { messages, setSelectedRoom } = useChat();
-  const { t } = useTranslation();
-
-  const roomsWithMessages = Object.entries(messages)
-    .filter(([_, msgs]) => msgs.length > 0)
-    .map(([roomId, msgs]) => {
-      const sorted = [...msgs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      const lastMsg = sorted[0];
-      return {
-        roomId,
-        preview: lastMsg.text,
-        time: new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-    })
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // 전체 최신 순 정렬
-
-  return (
-    <VStack align="stretch" spacing={3} p={4}>
-      <Text fontSize="lg" fontWeight="bold">{t("Recent Chatting")}</Text>
-      {roomsWithMessages.map(({ roomId, preview, time }) => (
-        <Box
-          key={roomId}
-          p="3"
-          borderRadius="md"
-          bg="white"
-          _hover={{ bg: 'gray.100' }}
-          cursor="pointer"
-          onClick={() => setSelectedRoom(roomId)}
-        >
-          <Text fontWeight="semibold">{formatRoomName(roomId)}</Text>
-          <Text fontSize="sm" color="gray.600" noOfLines={1}>{preview}</Text>
-          <Text fontSize="xs" color="gray.400" textAlign="right">{time}</Text>
-        </Box>
-      ))}
-      {roomsWithMessages.length === 0 && (
-        <Text color="gray.500" mt="4">{t("There is no chat history yet.")}</Text>
-      )}
-    </VStack>
-  );
-};
-
-export default ChatList;*/
 import { VStack, Text, Box } from '@chakra-ui/react';
 import { useEffect } from 'react'; // useEffect는 이제 초기 로딩에 필요 없을 수 있지만, 현재 ChatContext 로직 고려
 import { useChat } from './context/ChatContext';
 import { useTranslation } from "react-i18next";
-
-// BASE_URL은 ChatContext에서 이미 관리되고 있으므로 여기서는 제거하거나, ChatContext에서 가져와 사용합니다.
-// 여기서는 ChatContext의 messages 데이터를 직접 활용하므로 BASE_URL은 ChatList에서 필요 없습니다.
-// const BASE_URL = 'http://localhost:8080'; // <-- 이 줄은 더 이상 필요 없음
 
 const formatRoomName = (roomId) => {
  if (roomId.startsWith('user-')) {
@@ -69,9 +11,7 @@ const formatRoomName = (roomId) => {
   return roomId;
 };
 
-// projectId prop은 ChatLayout에서 사용되지 않으므로 제거하거나,
-// ChatList의 역할이 특정 프로젝트의 채팅 목록이 아니라 "모든 채팅방" 목록이라면
-// 이 props는 필요 없습니다.
+
 const ChatList = () => { // projectId prop 제거
  // ChatContext에서 모든 방의 메시지 상태와 방 선택 함수를 가져옵니다.
  const { messages, setSelectedRoom, allAvailableRooms } = useChat(); // allAvailableRooms 추가 (ChatLayout에서 가져와 ChatContext에 전달해야 할 수도)
