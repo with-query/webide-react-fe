@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid, useDisclosure, useToast } from "@chakra-ui/react";
 import axios from "axios";
+import { useAuth } from '../contexts/AuthContext'; 
 
 import "../styles/dashboard.css";
 import BoltIcon from "@/components/icons/BoltIcon";
@@ -38,7 +39,6 @@ const Dashboard = () => {
     const [deleteTargetProject, setDeleteTargetProject] = useState(null);
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [inviteTargetProject, setInviteTargetProject] = useState(null);
-    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
     const [activeDropdownId, setActiveDropdownId] = useState(null);
     const dropdownRef = useRef(null);
@@ -50,31 +50,25 @@ const Dashboard = () => {
     const [tableItemCount, setTableItemCount] = useState(0);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const toast = useToast();
-
     const navigate = useNavigate();
+    const toast = useToast();
     const { t } = useTranslation();
+    const { isLoggedIn, openLoginModal } = useAuth(); 
 
     const BASE_URL = "http://20.196.89.99:8080";
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            setLoading(true);
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                toast({
-                    title: "인증 필요",
-                    description: "로그인이 필요합니다.",
-                    status: "info",
-                    duration: 3000,
-                    isClosable: true,
-                });
-                navigate("/login");
+            // ✅ 2. 이제 localStorage 대신, Context의 isLoggedIn 상태로 모든 것을 판단합니다.
+            if (!isLoggedIn) {
+                // 로그인이 안 되어있다면, 모달을 열고 함수를 즉시 종료합니다.
+                openLoginModal();
                 setLoading(false);
                 return;
             }
 
+            setLoading(true);
+            const token = localStorage.getItem("ACCESS_TOKEN_KEY");
             try {
                 const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -82,39 +76,20 @@ const Dashboard = () => {
                     axios.get(`${BASE_URL}/api/db-connections`, { headers: { Authorization: `Bearer ${token}` } }),
                 ]);
 
+                setUser(userRes.data);
+                setProjects(projectsRes.data);
+
                 const fetchedUser = userRes.data;
                 const fetchedProjects = projectsRes.data;
                 const fetchedDbConnections = dbConnectionsRes.data;
 
-                setUser(fetchedUser);
-                setDbConnections(fetchedDbConnections);
-
-                const projectsWithDbStatus = fetchedProjects.map((project) => ({
-                    ...project,
-                    isDbConnected: fetchedDbConnections.some(
-                        (conn) => conn.projectId === project.id
-                    ),
-                }));
-                setProjects(projectsWithDbStatus);
-
-            } catch (error) {
+               } catch (error) {
                 console.error("대시보드 데이터 로딩 실패:", error);
-                const errorMessage = error.response?.data?.message || "서버에서 데이터를 가져오는 데 실패했습니다.";
-                toast({
-                    title: "데이터 로딩 실패",
-                    description: errorMessage,
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                });
-
-                setUser(null);
-                setProjects([]);
-                setDbConnections([]);
-
+                // 401/403 에러 발생 시 토큰을 삭제하고 로그아웃 처리
                 if (error.response?.status === 401 || error.response?.status === 403) {
-                    localStorage.removeItem("token");
-                    navigate("/login");
+                    localStorage.removeItem("ACCESS_TOKEN_KEY");
+                    // 페이지를 새로고침하여 AuthContext가 변경된 상태를 인지하도록 합니다.
+                    window.location.reload(); 
                 }
             } finally {
                 setLoading(false);
@@ -122,58 +97,69 @@ const Dashboard = () => {
         };
 
         fetchDashboardData();
-    }, [navigate, toast]);
+    }, [navigate, toast, openLoginModal]);
 
     useEffect(() => {
-        const calculateProjectStatus = async () => {
-            let currentProjectCount = selectedProjectId === null ? projects.length : 1;
-            let currentTotalQueries = 0;
-            let currentTotalTables = 0;
-            const token = localStorage.getItem("token");
+        const calculateUsageStatus = async () => {
+            setProjectCount(projects.length);
 
-            if (token) {
-                if (selectedProjectId !== null) {
-                    const dbConn = dbConnections.find((conn) => conn.projectId === selectedProjectId);
-                    if (dbConn) {
-                        try {
-                            const schemaRes = await axios.get(`${BASE_URL}/api/db-connections/${dbConn.id}/schemas`, {
-                                headers: { Authorization: `Bearer ${token}` },
-                            });
-                            currentTotalTables = schemaRes.data?.length || 0;
-                        } catch (error) {
-                            console.error(`스키마 로딩 실패 for project ${selectedProjectId}:`, error);
-                            toast({
-                                title: "스키마 로딩 실패",
-                                description: "선택된 프로젝트의 DB 스키마를 가져오는 데 실패했습니다.",
-                                status: "error",
-                                duration: 3000,
-                            });
-                        }
-                    }
-                } else {
-                    for (const conn of dbConnections) {
-                        try {
-                            const projectExists = projects.some((p) => p.id === conn.projectId);
-                            if (projectExists) {
-                                const schemaRes = await axios.get(`${BASE_URL}/api/db-connections/${conn.id}/schemas`, {
-                                    headers: { Authorization: `Bearer ${token}` },
-                                });
-                                currentTotalTables += schemaRes.data?.length || 0;
-                            }
-                        } catch (error) {
-                            console.warn(`일부 DB 스키마 로딩 실패 (conn ID: ${conn.id}):`, error);
-                        }
-                    }
-                }
+            const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+            if (!token) {
+                setTableItemCount(0);
+                setQueryCount(0);
+                return;
             }
 
-            setProjectCount(currentProjectCount);
-            setQueryCount(currentTotalQueries);
-            setTableItemCount(currentTotalTables);
+            // --- 1. 테이블 수 계산 ---
+            let totalTables = 0;
+            const schemaPromises = dbConnections.map(conn =>
+                axios.get(`${BASE_URL}/api/db-connections/${conn.id}/schemas`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }).catch(() => ({ data: [] }))
+            );
+            const schemaResults = await Promise.all(schemaPromises);
+            schemaResults.forEach(res => {
+                if (res.data && Array.isArray(res.data)) {
+                    totalTables += res.data.length;
+                }
+            });
+            setTableItemCount(totalTables);
+
+            // --- 2. 쿼리(.sql 파일) 수 계산 ---
+            let totalSqlFiles = 0;
+            const filePromises = projects.map(p =>
+                axios.get(`${BASE_URL}/api/projects/${p.id}/files`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }).catch(() => ({ data: [] }))
+            );
+            
+            // 재귀적으로 .sql 파일을 카운트하는 함수
+            const countSqlFiles = (nodes) => {
+                let count = 0;
+                for (const node of nodes) {
+                    if (node.type === 'file' && node.name.endsWith('.sql')) {
+                        count++;
+                    }
+                    if (node.children) {
+                        count += countSqlFiles(node.children);
+                    }
+                }
+                return count;
+            };
+
+            const fileResults = await Promise.all(filePromises);
+            fileResults.forEach(res => {
+                if (res.data && Array.isArray(res.data)) {
+                    totalSqlFiles += countSqlFiles(res.data);
+                }
+            });
+            setQueryCount(totalSqlFiles);
         };
 
-        calculateProjectStatus();
-    }, [selectedProjectId, projects, dbConnections, toast, BASE_URL]);
+        if (isLoggedIn) {
+            calculateUsageStatus();
+        }
+    }, [projects, dbConnections, isLoggedIn]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -478,6 +464,14 @@ const Dashboard = () => {
         }
     };
 
+    if (loading || !isLoggedIn) {
+        return (
+            <Box p={8} bg="#f9f8f6" minH="100vh">
+                {/* 로딩 스피너나 간단한 메시지를 여기에 표시할 수 있습니다. */}
+            </Box>
+        );
+    }
+
     return (
         <Box p={8} bg="#f9f8f6" minH="100vh" color="text.primary">
             <h1 className="dashboard-title">{t("Dashboard")}</h1>
@@ -598,7 +592,7 @@ const Dashboard = () => {
                                 onSelect={handleOpenProject}
                             />
 
-                            <div className="quick-action-item" onClick={() => user && setIsChatModalOpen(true)} role="button" tabIndex={0}>
+                            <div className="quick-action-item"onClick={() => user && navigate('/chat')} role="button" tabIndex={0}>
                                 <ChatIcon className="quick-action-icon chat" />
                                 <p className="quick-action-title">{t("Team chat")}</p>
                                 <p className="quick-action-arrow">&gt;</p>
