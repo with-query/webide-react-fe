@@ -122,11 +122,11 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving 
               isLoading={isLoading}
               onClick={runCode}
             >
-              Run Code
+              {t("Run Code")}
             </Button>
             <Spacer />
             <Button size="sm" variant="outline">
-              공유
+              {t("Share")}
             </Button>
             <Button
               size="sm"
@@ -134,7 +134,7 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving 
               onClick={onSave}
               isLoading={isSaving}
             >
-              저장
+              {t("Save")}
             </Button>
           </HStack>
           <Box flex="1" border="1px solid" borderColor={isError ? "red.500" : "#999"} borderRadius="md" overflow="hidden">

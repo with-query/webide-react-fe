@@ -15,4 +15,5 @@ export const CODE_SNIPPETS = {
   csharp:
     'using System;\n\nnamespace HelloWorld\n{\n\tclass Hello { \n\t\tstatic void Main(string[] args) {\n\t\t\tConsole.WriteLine("Hello World in C#");\n\t\t}\n\t}\n}\n',
   php: "<?php\n\n$name = 'Alex';\necho $name;\n",
+  sql: `SELECT * FROM table_name;\n`
 };

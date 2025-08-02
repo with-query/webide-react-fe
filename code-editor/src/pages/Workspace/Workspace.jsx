@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { Box, useToast, Flex, Text, Spinner, Center } from "@chakra-ui/react";
+import { Box, useToast, Flex, Text, Spinner, Center, Divider } from "@chakra-ui/react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import axios from 'axios';
 
-// Editor 페이지와 동일한 파일 관리 컴포넌트와 훅을 가져옵니다.
+// ✅ 실제 파일 구조에 맞게 모든 상대 경로를 수정했습니다.
 import FolderSidebar from "../../components/FolderSidebar"; 
 import { useProjectTree } from "../../hooks/useProjectTree";
 import QueryBuilder from "./components/QueryBuilder";
@@ -60,6 +60,7 @@ const Workspace = () => {
         setDbSchema({ tables: schemaResponse.data });
       } catch (error) {
         console.error("DB 스키마 로딩 실패:", error);
+        setDbSchema({ tables: [] });
         toast({
           title: "스키마 로딩 실패",
           description: error.message,
@@ -87,7 +88,30 @@ const Workspace = () => {
     setActiveFile(prev => ({ ...prev, language: lang }));
   }, [activeFile, setTree]);
 
-  const handleRunQuery = async () => { /* ... */ };
+  const handleRunQuery = useCallback(async (queryToRun) => {
+    setIsExecuting(true);
+    setQueryResults(null);
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.post(`${API_BASE_URL}/query/execute`, 
+        { query: queryToRun || sqlQuery }, // CodeEditor에서 받은 코드를 우선 사용
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      setQueryResults(response.data);
+    } catch (error) {
+      console.error("쿼리 실행 실패:", error);
+      toast({
+        title: "쿼리 실행 실패",
+        description: error.response?.data?.message || error.message,
+        status: "error",
+      });
+    } finally {
+      setIsExecuting(false);
+    }
+  }, [sqlQuery, toast]);
+
+  // isSqlFile 변수를 선언하여 읽기 전용 상태를 제어합니다.
+  const isSqlFile = activeFile && activeFile.name.toLowerCase().endsWith('.sql');
   
   if (isLoadingFileTree || isLoadingSchema) {
     return (
@@ -105,13 +129,15 @@ const Workspace = () => {
           <Panel defaultSize={60} minSize={30}>
             <PanelGroup direction="horizontal">
               <Panel defaultSize={15} minSize={10} style={{ overflow: 'auto', background: '#f9f8f6' }}>
-                {/* ✅ 왼쪽 사이드바에 사용자 파일 목록을 표시합니다. */}
-                <FolderSidebar
-                  tree={tree}
-                  setTree={setTree}
-                  onSelectFile={setActiveFile}
-                  activeFileId={activeFile?.id}
-                />        
+                <Box p={2}>
+                  <Text fontWeight="bold" mb={2} fontSize="sm" color="gray.500">PROJECT FILES</Text>
+                  <FolderSidebar
+                    tree={tree}
+                    setTree={setTree}
+                    onSelectFile={setActiveFile}
+                    activeFileId={activeFile?.id}
+                  />
+                </Box>
               </Panel>
               <PanelResizeHandle className="resize-handle-vertical" />
               <Panel defaultSize={50} minSize={30}>
@@ -124,7 +150,6 @@ const Workspace = () => {
                   whereClauses={whereClauses}
                   setWhereClauses={setWhereClauses}
                   setSqlQuery={setSqlQuery}
-                  tablesFromSchema={tablesFromSchema}
                 />
               </Panel>
               <PanelResizeHandle className="resize-handle-vertical" />
@@ -139,6 +164,7 @@ const Workspace = () => {
                   onLanguageChange={changeLanguage}
                   onSave={manualSave}
                   isSaving={isSaving}
+                  isReadOnly={!isSqlFile && activeFile}
                 />
               </Panel>
             </PanelGroup>
