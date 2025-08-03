@@ -148,21 +148,23 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving 
 
 export default CodeEditor;
 */
+
+
 import { useRef, useEffect, useState } from "react";
-import { 
+import {
     Box,
     Flex,
     HStack,
     Button,
     Spacer,
-    useToast 
+    useToast
 } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import LanguageSelector from "./LanguageSelector";
 import Output from "./Output";
 import { CODE_SNIPPETS } from "../constants";
 import { useTranslation } from "react-i18next";
-import { executeCode } from "../api"; 
+import { executeCode } from "../api";
 
 const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving }) => {
     const editorRef = useRef();
@@ -258,10 +260,10 @@ const CodeEditor = ({ file, onChangeContent, onLanguageChange, onSave, isSaving 
     return (
         <Box w="100%" bg="brand.100" color="text.primary" fontWeight="bold" m={2}>
             <Flex direction={{ base: "column", md: "row" }} gap={4}>
-                
+
                 {/* 왼쪽: 코드 에디터 영역 */}
                 <Flex direction="column" w={{ base: "100%", md: "50%" }}>
-                    <HStack spacing={4} mb={2} h="32px"> 
+                    <HStack spacing={4} mb={2} h="32px">
                         <LanguageSelector
                             language={file.language}
                             onSelect={handleLanguageChange}

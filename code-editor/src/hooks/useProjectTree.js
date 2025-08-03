@@ -1,8 +1,57 @@
-/*
-import { useState, useEffect, useCallback } from 'react';
+/*import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { CODE_SNIPPETS } from '../constants'; // CODE_SNIPPETS 임포트
 
 const BASE_URL = "http://20.196.89.99:8080";
+
+// Utility function to build a nested tree from a flat list of nodes
+const buildTree = (nodes) => {
+    const nodeMap = new Map();
+    const rootNodes = [];
+
+    // Initialize map with nodes, ensuring each has a children array
+    nodes.forEach(node => {
+        nodeMap.set(node.id, { ...node, children: [] });
+    });
+
+    // Populate children arrays and identify root nodes
+    nodes.forEach(node => {
+        if (node.parentId) {
+            const parent = nodeMap.get(node.parentId);
+            if (parent) {
+                parent.children.push(nodeMap.get(node.id));
+            }
+        } else {
+            rootNodes.push(nodeMap.get(node.id));
+        }
+    });
+
+    // Recursively sort children for consistent tree structure
+    const sortChildren = (node) => {
+        if (node.children && node.children.length > 0) {
+            node.children.sort((a, b) => {
+                // Directories first, then files
+                if (a.type === 'DIRECTORY' && b.type === 'FILE') return -1;
+                if (a.type === 'FILE' && b.type === 'DIRECTORY') return 1;
+                // Then by name
+                return a.name.localeCompare(b.name);
+            });
+            node.children.forEach(sortChildren); // Sort nested children
+        }
+    };
+
+    rootNodes.forEach(sortChildren); // Sort all branches of the tree
+
+    // Sort root nodes themselves
+    rootNodes.sort((a, b) => {
+        if (a.type === 'DIRECTORY' && b.type === 'FILE') return -1;
+        if (a.type === 'FILE' && b.type === 'DIRECTORY') return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    return rootNodes;
+};
+
 
 export const useProjectTree = (projectId) => {
     const [tree, setTree] = useState([]);
@@ -27,7 +76,18 @@ export const useProjectTree = (projectId) => {
             const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
             throw new Error(errorData.message || `파일 트리 로딩 실패: ${response.status}`);
         }
-        return response.json();
+        
+        let flatData = await response.json();
+        // API 응답이 단일 객체일 경우 배열로 감싸줍니다.
+        if (!Array.isArray(flatData)) {
+            flatData = [flatData];
+            console.warn("[useProjectTree] API returned a single object, wrapped it in an array for buildTree.");
+        }
+
+        console.log("[useProjectTree] Raw flat data from API (before buildTree):", flatData); // 진단용 로그
+        const nestedTree = buildTree(flatData); // Build the nested tree
+        console.log("[useProjectTree] Nested tree after buildTree:", nestedTree); // 진단용 로그
+        return nestedTree;
     }, []);
 
     // fetch API를 사용하여 특정 파일 내용을 가져오는 함수 (Editor에서 사용)
@@ -61,23 +121,19 @@ export const useProjectTree = (projectId) => {
             // 1. 루트 디렉토리 (src) 생성 요청
             console.log("[useProjectTree] Creating root directory 'src'...");
             const rootDirResponse = await fetch(
-                // 'name=src' 쿼리 파라미터를 URL에 직접 포함
                 `${BASE_URL}/api/projects/${currentProjectId}/root-directory?name=src`,
                 {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
-                    // 백엔드가 요청 본문을 기대하지 않으므로 body는 제거
                 }
             );
 
             if (!rootDirResponse.ok) {
-                // 'src' 디렉토리가 이미 존재하여 409 Conflict 응답을 받은 경우, 경고만 표시하고 계속 진행
                 if (rootDirResponse.status === 409) {
                     console.warn("[useProjectTree] 'src' directory already exists. Proceeding to fetch tree.");
                 } else {
-                    // 그 외의 오류는 치명적인 것으로 간주하고 에러 발생
                     const errorData = await rootDirResponse.json().catch(() => ({ message: '알 수 없는 오류' }));
                     throw new Error(errorData.message || `루트 디렉토리 생성 실패: ${rootDirResponse.status}`);
                 }
@@ -85,63 +141,11 @@ export const useProjectTree = (projectId) => {
                 console.log("[useProjectTree] 'src' directory creation request sent successfully.");
             }
 
-            // 2. 루트 디렉토리 생성 후, 파일 트리를 다시 가져와서 'src' 폴더의 실제 ID를 찾습니다.
-            console.log("[useProjectTree] Fetching updated file tree to find 'src' folder ID...");
-            // 백엔드 getFileTree API는 단일 FileTreeNode 객체를 반환할 것으로 예상
-            const fetchedTreeData = await fetchProjectFiles(currentProjectId); 
+            // 'hello.js' 파일 생성 로직 제거
+            // 사용자가 직접 파일을 생성하도록 유도
 
-            let srcFolder = null;
-            if (Array.isArray(fetchedTreeData)) {
-                // 만약 fetchProjectFiles가 배열을 반환한다면, 배열에서 'src' 폴더를 찾습니다.
-                // 폴더 타입 체크를 'DIRECTORY'로 변경
-                srcFolder = fetchedTreeData.find(node => node.name === 'src' && node.type === 'DIRECTORY');
-            } else if (fetchedTreeData && typeof fetchedTreeData === 'object') {
-                // fetchProjectFiles가 단일 객체를 반환한다면, 해당 객체가 'src' 폴더인지 확인하거나
-                // 그 자식 중에서 'src' 폴더를 찾습니다.
-                // 폴더 타입 체크를 'DIRECTORY'로 변경
-                if (fetchedTreeData.name === 'src' && fetchedTreeData.type === 'DIRECTORY') {
-                    srcFolder = fetchedTreeData;
-                } else if (fetchedTreeData.children) {
-                    // 폴더 타입 체크를 'DIRECTORY'로 변경
-                    srcFolder = fetchedTreeData.children.find(node => node.name === 'src' && node.type === 'DIRECTORY');
-                }
-            }
-
-            if (!srcFolder) {
-                throw new Error("루트 디렉토리 'src'를 찾을 수 없습니다. 파일 트리 구조를 확인해주세요.");
-            }
-            console.log("[useProjectTree] Found 'src' folder:", srcFolder);
-
-            // 3. 'hello.js' 파일 생성 (찾아낸 'src' 폴더의 ID를 parentId로 사용)
-            console.log("[useProjectTree] Creating 'hello.js' file inside 'src' folder...");
-            const helloJsResponse = await fetch(
-                `${BASE_URL}/api/projects/${currentProjectId}/files`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json', // JSON 본문을 보내므로 필수
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        name: "hello.js",
-                        type: "FILE", // 파일 타입은 'FILE'
-                        parentId: srcFolder.id, // 백엔드에서 조회한 실제 srcFolder의 ID를 사용
-                        language: "javascript",
-                        content: `console.log("Hello, World!");`
-                    })
-                }
-            );
-
-            if (!helloJsResponse.ok) {
-                const errorData = await helloJsResponse.json().catch(() => ({ message: '알 수 없는 오류' }));
-                throw new Error(errorData.message || `hello.js 파일 생성 실패: ${helloJsResponse.status}`);
-            }
-            const helloJsFile = await helloJsResponse.json();
-            console.log("[useProjectTree] 'hello.js' file created:", helloJsFile);
-
-            // 최종적으로 업데이트된 파일 트리를 다시 가져와서 UI에 반영
-            const finalTree = await fetchProjectFiles(currentProjectId);
-            console.log("[useProjectTree] Generated default tree structure:", finalTree);
+            const finalTree = await fetchProjectFiles(currentProjectId); // Fetch the final, fully updated tree
+            console.log("[useProjectTree] Generated default tree structure (only src):", finalTree);
             return finalTree;
 
         } catch (error) {
@@ -153,7 +157,7 @@ export const useProjectTree = (projectId) => {
             });
             return null;
         }
-    }, [toast, fetchProjectFiles]); // fetchProjectFiles를 의존성 배열에 추가
+    }, [toast, fetchProjectFiles]);
 
     useEffect(() => {
         const fetchTreeAndInitialize = async () => {
@@ -167,31 +171,13 @@ export const useProjectTree = (projectId) => {
             console.log("[useProjectTree] Loading set to true.");
 
             try {
-                let fetchedData;
-                try {
-                    fetchedData = await fetchProjectFiles(projectId); // fetchProjectFiles 사용
-                } catch (fetchError) {
-                    console.warn("[useProjectTree] Initial fetchProjectFiles failed, assuming empty tree:", fetchError.message);
-                    fetchedData = null; // 에러 발생 시 빈 데이터로 간주
-                }
-                
-                console.log("[useProjectTree] Raw fetched data:", fetchedData);
+                let fetchedData = await fetchProjectFiles(projectId);
+                console.log("[useProjectTree] Fetched data (already nested tree):", fetchedData);
 
-                let processedTree = [];
+                let processedTree = fetchedData;
 
-                // fetchedData가 유효한 배열이면 그대로 사용
-                if (Array.isArray(fetchedData)) {
-                    processedTree = fetchedData;
-                } 
-                // fetchedData가 단일 유효 객체이면 배열로 래핑
-                else if (fetchedData && typeof fetchedData === 'object' && (fetchedData.id !== null || fetchedData.name !== null)) {
-                    processedTree = [fetchedData];
-                }
-                // 그 외의 경우 (null, undefined, 빈 객체 등) processedTree는 빈 배열로 유지
-
-                // processedTree가 비어있다면 (즉, 프로젝트에 파일이 없다면) 기본 구조 생성 시도
                 if (processedTree.length === 0) {
-                    console.warn("[useProjectTree] Fetched data is empty or invalid. Attempting to create default structure...");
+                    console.warn("[useProjectTree] Fetched data is empty. Attempting to create default structure...");
                     const defaultStructure = await createDefaultProjectStructure(projectId);
                     if (defaultStructure) {
                         processedTree = defaultStructure;
@@ -201,8 +187,16 @@ export const useProjectTree = (projectId) => {
                     }
                 }
 
-                setTree(processedTree);
-                console.log("[useProjectTree] Tree state updated:", processedTree);
+                setTree(prevTree => {
+                    if (JSON.stringify(prevTree) !== JSON.stringify(processedTree)) {
+                        console.log("[useProjectTree] Tree state updated:", processedTree);
+                        return processedTree;
+                    } else {
+                        console.log("[useProjectTree] Tree state is identical, skipping update to prevent re-render.");
+                        return prevTree;
+                    }
+                });
+
             } catch (error) {
                 console.error("[useProjectTree] File tree loading or initialization failed:", error.message);
                 toast({
@@ -210,7 +204,8 @@ export const useProjectTree = (projectId) => {
                     description: error.message || '로그인 상태를 확인하거나 권한이 있는지 확인해주세요.',
                     status: 'error',
                 });
-                setTree([]);
+                setTree([]); // 오류 발생 시 tree를 비웁니다.
+                console.log("[useProjectTree] Tree state reset to empty due to error.");
             } finally {
                 setLoading(false);
                 console.log("[useProjectTree] Loading set to false.");
@@ -265,12 +260,63 @@ export const useProjectTree = (projectId) => {
         }
     }, [projectId, toast]);
 
-    return { tree, setTree, loading, manualSave, isSaving, fetchFileContent }; // fetchFileContent 추가 반환
+    return { tree, setTree, loading, manualSave, isSaving, fetchFileContent };
 };
-*/import { useState, useEffect, useCallback } from 'react';
+*/
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { CODE_SNIPPETS } from '../constants'; // CODE_SNIPPETS 임포트
 
 const BASE_URL = "http://20.196.89.99:8080";
+
+// Utility function to build a nested tree from a flat list of nodes
+const buildTree = (nodes) => {
+    const nodeMap = new Map();
+    const rootNodes = [];
+
+    // Initialize map with nodes, ensuring each has a children array
+    nodes.forEach(node => {
+        nodeMap.set(node.id, { ...node, children: [] });
+    });
+
+    // Populate children arrays and identify root nodes
+    nodes.forEach(node => {
+        if (node.parentId) {
+            const parent = nodeMap.get(node.parentId);
+            if (parent) {
+                parent.children.push(nodeMap.get(node.id));
+            }
+        } else {
+            rootNodes.push(nodeMap.get(node.id));
+        }
+    });
+
+    // Recursively sort children for consistent tree structure
+    const sortChildren = (node) => {
+        if (node.children && node.children.length > 0) {
+            node.children.sort((a, b) => {
+                // Directories first, then files
+                if (a.type === 'DIRECTORY' && b.type === 'FILE') return -1;
+                if (a.type === 'FILE' && b.type === 'DIRECTORY') return 1;
+                // Then by name
+                return a.name.localeCompare(b.name);
+            });
+            node.children.forEach(sortChildren); // Sort nested children
+        }
+    };
+
+    rootNodes.forEach(sortChildren); // Sort all branches of the tree
+
+    // Sort root nodes themselves
+    rootNodes.sort((a, b) => {
+        if (a.type === 'DIRECTORY' && b.type === 'FILE') return -1;
+        if (a.type === 'FILE' && b.type === 'DIRECTORY') return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    return rootNodes;
+};
+
 
 export const useProjectTree = (projectId) => {
     const [tree, setTree] = useState([]);
@@ -295,7 +341,18 @@ export const useProjectTree = (projectId) => {
             const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
             throw new Error(errorData.message || `파일 트리 로딩 실패: ${response.status}`);
         }
-        return response.json();
+        
+        let flatData = await response.json();
+        // API 응답이 단일 객체일 경우 배열로 감싸줍니다.
+        if (!Array.isArray(flatData)) {
+            flatData = [flatData];
+            console.warn("[useProjectTree] API returned a single object, wrapped it in an array for buildTree.");
+        }
+
+        console.log("[useProjectTree] Raw flat data from API (before buildTree):", flatData); // 진단용 로그
+        const nestedTree = buildTree(flatData); // Build the nested tree
+        console.log("[useProjectTree] Nested tree after buildTree:", nestedTree); // 진단용 로그
+        return nestedTree;
     }, []);
 
     // fetch API를 사용하여 특정 파일 내용을 가져오는 함수 (Editor에서 사용)
@@ -329,23 +386,19 @@ export const useProjectTree = (projectId) => {
             // 1. 루트 디렉토리 (src) 생성 요청
             console.log("[useProjectTree] Creating root directory 'src'...");
             const rootDirResponse = await fetch(
-                // 'name=src' 쿼리 파라미터를 URL에 직접 포함
                 `${BASE_URL}/api/projects/${currentProjectId}/root-directory?name=src`,
                 {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
-                    // 백엔드가 요청 본문을 기대하지 않으므로 body는 제거
                 }
             );
 
             if (!rootDirResponse.ok) {
-                // 'src' 디렉토리가 이미 존재하여 409 Conflict 응답을 받은 경우, 경고만 표시하고 계속 진행
                 if (rootDirResponse.status === 409) {
                     console.warn("[useProjectTree] 'src' directory already exists. Proceeding to fetch tree.");
                 } else {
-                    // 그 외의 오류는 치명적인 것으로 간주하고 에러 발생
                     const errorData = await rootDirResponse.json().catch(() => ({ message: '알 수 없는 오류' }));
                     throw new Error(errorData.message || `루트 디렉토리 생성 실패: ${rootDirResponse.status}`);
                 }
@@ -353,68 +406,11 @@ export const useProjectTree = (projectId) => {
                 console.log("[useProjectTree] 'src' directory creation request sent successfully.");
             }
 
-            // 2. 루트 디렉토리 생성 후, 파일 트리를 다시 가져와서 'src' 폴더의 실제 ID를 찾습니다.
-            console.log("[useProjectTree] Fetching updated file tree to find 'src' folder ID...");
-            // 백엔드 getFileTree API는 단일 FileTreeNode 객체를 반환할 것으로 예상
-            const fetchedTreeData = await fetchProjectFiles(currentProjectId); 
+            // 'hello.js' 파일 생성 로직 제거
+            // 사용자가 직접 파일을 생성하도록 유도
 
-            let srcFolder = null;
-            if (Array.isArray(fetchedTreeData)) {
-                // 만약 fetchProjectFiles가 배열을 반환한다면, 배열에서 'src' 폴더를 찾습니다.
-                // 폴더 타입 체크를 'DIRECTORY'로 변경
-                srcFolder = fetchedTreeData.find(node => node.name === 'src' && node.type === 'DIRECTORY');
-            } else if (fetchedTreeData && typeof fetchedTreeData === 'object') {
-                // fetchProjectFiles가 단일 객체를 반환한다면, 해당 객체가 'src' 폴더인지 확인하거나
-                // 그 자식 중에서 'src' 폴더를 찾습니다.
-                // 폴더 타입 체크를 'DIRECTORY'로 변경
-                if (fetchedTreeData.name === 'src' && fetchedTreeData.type === 'DIRECTORY') {
-                    srcFolder = fetchedTreeData;
-                } else if (fetchedTreeData.children) {
-                    // 폴더 타입 체크를 'DIRECTORY'로 변경
-                    srcFolder = fetchedTreeData.children.find(node => node.name === 'src' && node.type === 'DIRECTORY');
-                }
-            }
-
-            if (!srcFolder) {
-                throw new Error("루트 디렉토리 'src'를 찾을 수 없습니다. 파일 트리 구조를 확인해주세요.");
-            }
-            console.log("[useProjectTree] Found 'src' folder:", srcFolder);
-
-            // 3. 'hello.js' 파일 생성 (찾아낸 'src' 폴더의 ID를 parentId로 사용)
-            console.log("[useProjectTree] Creating 'hello.js' file inside 'src' folder...");
-            const helloJsResponse = await fetch(
-                `${BASE_URL}/api/projects/${currentProjectId}/files`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json', // JSON 본문을 보내므로 필수
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        name: "hello.js",
-                        type: "FILE", // 파일 타입은 'FILE'
-                        parentId: srcFolder.id, // 백엔드에서 조회한 실제 srcFolder의 ID를 사용
-                        language: "javascript",
-                        content: `console.log("Hello, World!");`
-                    })
-                }
-            );
-
-            if (!helloJsResponse.ok) {
-                // 'hello.js'가 이미 존재하여 409 Conflict 응답을 받은 경우, 경고만 표시하고 계속 진행
-                if (helloJsResponse.status === 409) {
-                    console.warn("[useProjectTree] 'hello.js' already exists. Proceeding to fetch tree.");
-                } else {
-                    const errorData = await helloJsResponse.json().catch(() => ({ message: '알 수 없는 오류' }));
-                    throw new Error(errorData.message || `hello.js 파일 생성 실패: ${helloJsResponse.status}`);
-                }
-            } else {
-                console.log("[useProjectTree] 'hello.js' file creation request sent successfully.");
-            }
-
-            // 최종적으로 업데이트된 파일 트리를 다시 가져와서 UI에 반영
-            const finalTree = await fetchProjectFiles(currentProjectId);
-            console.log("[useProjectTree] Generated default tree structure:", finalTree);
+            const finalTree = await fetchProjectFiles(currentProjectId); // Fetch the final, fully updated tree
+            console.log("[useProjectTree] Generated default tree structure (only src):", finalTree);
             return finalTree;
 
         } catch (error) {
@@ -426,7 +422,7 @@ export const useProjectTree = (projectId) => {
             });
             return null;
         }
-    }, [toast, fetchProjectFiles]); // fetchProjectFiles를 의존성 배열에 추가
+    }, [toast, fetchProjectFiles]);
 
     useEffect(() => {
         const fetchTreeAndInitialize = async () => {
@@ -440,31 +436,13 @@ export const useProjectTree = (projectId) => {
             console.log("[useProjectTree] Loading set to true.");
 
             try {
-                let fetchedData;
-                try {
-                    fetchedData = await fetchProjectFiles(projectId); // fetchProjectFiles 사용
-                } catch (fetchError) {
-                    console.warn("[useProjectTree] Initial fetchProjectFiles failed, assuming empty tree:", fetchError.message);
-                    fetchedData = null; // 에러 발생 시 빈 데이터로 간주
-                }
-                
-                console.log("[useProjectTree] Raw fetched data:", fetchedData);
+                let fetchedData = await fetchProjectFiles(projectId);
+                console.log("[useProjectTree] Fetched data (already nested tree):", fetchedData);
 
-                let processedTree = [];
+                let processedTree = fetchedData;
 
-                // fetchedData가 유효한 배열이면 그대로 사용
-                if (Array.isArray(fetchedData)) {
-                    processedTree = fetchedData;
-                } 
-                // fetchedData가 단일 유효 객체이면 배열로 래핑
-                else if (fetchedData && typeof fetchedData === 'object' && (fetchedData.id !== null || fetchedData.name !== null)) {
-                    processedTree = [fetchedData];
-                }
-                // 그 외의 경우 (null, undefined, 빈 객체 등) processedTree는 빈 배열로 유지
-
-                // processedTree가 비어있다면 (즉, 프로젝트에 파일이 없다면) 기본 구조 생성 시도
                 if (processedTree.length === 0) {
-                    console.warn("[useProjectTree] Fetched data is empty or invalid. Attempting to create default structure...");
+                    console.warn("[useProjectTree] Fetched data is empty. Attempting to create default structure...");
                     const defaultStructure = await createDefaultProjectStructure(projectId);
                     if (defaultStructure) {
                         processedTree = defaultStructure;
@@ -474,8 +452,16 @@ export const useProjectTree = (projectId) => {
                     }
                 }
 
-                setTree(processedTree);
-                console.log("[useProjectTree] Tree state updated:", processedTree);
+                setTree(prevTree => {
+                    if (JSON.stringify(prevTree) !== JSON.stringify(processedTree)) {
+                        console.log("[useProjectTree] Tree state updated:", processedTree);
+                        return processedTree;
+                    } else {
+                        console.log("[useProjectTree] Tree state is identical, skipping update to prevent re-render.");
+                        return prevTree;
+                    }
+                });
+
             } catch (error) {
                 console.error("[useProjectTree] File tree loading or initialization failed:", error.message);
                 toast({
@@ -483,7 +469,8 @@ export const useProjectTree = (projectId) => {
                     description: error.message || '로그인 상태를 확인하거나 권한이 있는지 확인해주세요.',
                     status: 'error',
                 });
-                setTree([]);
+                setTree([]); // 오류 발생 시 tree를 비웁니다.
+                console.log("[useProjectTree] Tree state reset to empty due to error.");
             } finally {
                 setLoading(false);
                 console.log("[useProjectTree] Loading set to false.");
@@ -538,5 +525,176 @@ export const useProjectTree = (projectId) => {
         }
     }, [projectId, toast]);
 
-    return { tree, setTree, loading, manualSave, isSaving, fetchFileContent }; // fetchFileContent 추가 반환
+    // --- 새로운 API 통합 함수들 ---
+
+    /**
+     * 새로운 파일 또는 디렉토리를 생성합니다.
+     * @param {object} options
+     * @param {string} options.name - 파일 또는 디렉토리 이름
+     * @param {'FILE' | 'DIRECTORY'} options.type - 타입 (FILE 또는 DIRECTORY)
+     * @param {number} options.parentId - 상위 디렉토리 ID
+     * @param {string} [options.language] - 파일 타입일 경우 언어 (예: 'javascript')
+     * @param {string} [options.content] - 파일 타입일 경우 내용
+     * @returns {Promise<object | null>} 생성된 파일/디렉토리 정보 또는 null
+     */
+    const createFileOrDirectory = useCallback(async (options) => {
+        const { name, type, parentId, language, content } = options;
+        console.log(`[useProjectTree] createFileOrDirectory called: ${name} (${type}) under parentId: ${parentId}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast({ title: "로그인이 필요합니다.", status: "warning" });
+            return null;
+        }
+
+        try {
+            const payload = { name, type, parentId };
+            if (type === 'FILE') {
+                payload.language = language || 'plaintext'; // 기본 언어 설정
+                payload.content = content || CODE_SNIPPETS[language] || ''; // 언어에 맞는 기본 스니펫 또는 빈 문자열
+            }
+
+            const response = await fetch(`${BASE_URL}/api/projects/${projectId}/files`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
+                throw new Error(errorData.message || `생성 실패: ${response.status}`);
+            }
+
+            const newEntry = await response.json();
+            toast({ title: `${type === 'FILE' ? '파일' : '폴더'}가 생성되었습니다.`, status: 'success' });
+            console.log(`[useProjectTree] ${type} created successfully:`, newEntry);
+
+            // 트리 업데이트를 위해 파일 목록을 다시 가져옵니다.
+            const updatedTree = await fetchProjectFiles(projectId);
+            setTree(updatedTree);
+            return newEntry;
+        } catch (error) {
+            console.error(`[useProjectTree] Failed to create ${type}:`, error.message);
+            toast({
+                title: `${type === 'FILE' ? '파일' : '폴더'} 생성 실패`,
+                description: error.message || "생성 중 오류가 발생했습니다.",
+                status: 'error',
+            });
+            return null;
+        }
+    }, [projectId, toast, fetchProjectFiles]);
+
+    /**
+     * 특정 파일 또는 디렉토리를 삭제합니다.
+     * @param {number} fileId - 삭제할 파일/디렉토리의 ID
+     * @returns {Promise<boolean>} 삭제 성공 여부
+     */
+    const deleteFileOrDirectory = useCallback(async (fileId) => {
+        console.log(`[useProjectTree] deleteFileOrDirectory called for fileId: ${fileId}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast({ title: "로그인이 필요합니다.", status: "warning" });
+            return false;
+        }
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/projects/${projectId}/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
+                throw new Error(errorData.message || `삭제 실패: ${response.status}`);
+            }
+
+            toast({ title: '삭제되었습니다.', status: 'success' });
+            console.log(`[useProjectTree] File/Directory ${fileId} deleted successfully.`);
+
+            // 트리 업데이트를 위해 파일 목록을 다시 가져옵니다.
+            const updatedTree = await fetchProjectFiles(projectId);
+            setTree(updatedTree);
+            return true;
+        } catch (error) {
+            console.error("[useProjectTree] Failed to delete file/directory:", error.message);
+            toast({
+                title: '삭제 실패',
+                description: error.message || "삭제 중 오류가 발생했습니다.",
+                status: 'error',
+            });
+            return false;
+        }
+    }, [projectId, toast, fetchProjectFiles]);
+
+    /**
+     * 특정 파일 또는 디렉토리의 이름이나 상위 디렉토리를 수정합니다.
+     * @param {number} fileId - 수정할 파일/디렉토리의 ID
+     * @param {object} options
+     * @param {string} [options.newName] - 새로운 이름
+     * @param {number} [options.newParentId] - 새로운 상위 디렉토리 ID
+     * @returns {Promise<object | null>} 수정된 파일/디렉토리 정보 또는 null
+     */
+    const updateFileOrDirectory = useCallback(async (fileId, options) => {
+        const { newName, newParentId } = options;
+        console.log(`[useProjectTree] updateFileOrDirectory called for fileId: ${fileId}, newName: ${newName}, newParentId: ${newParentId}`);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast({ title: "로그인이 필요합니다.", status: "warning" });
+            return null;
+        }
+
+        try {
+            const payload = {};
+            if (newName !== undefined) payload.newName = newName;
+            if (newParentId !== undefined) payload.newParentId = newParentId;
+
+            const response = await fetch(`${BASE_URL}/api/projects/${projectId}/${fileId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
+                throw new Error(errorData.message || `수정 실패: ${response.status}`);
+            }
+
+            const updatedEntry = await response.json();
+            toast({ title: '수정되었습니다.', status: 'success' });
+            console.log(`[useProjectTree] File/Directory ${fileId} updated successfully:`, updatedEntry);
+
+            // 트리 업데이트를 위해 파일 목록을 다시 가져옵니다.
+            const updatedTree = await fetchProjectFiles(projectId);
+            setTree(updatedTree);
+            return updatedEntry;
+        } catch (error) {
+            console.error("[useProjectTree] Failed to update file/directory:", error.message);
+            toast({
+                title: '수정 실패',
+                description: error.message || "수정 중 오류가 발생했습니다.",
+                status: 'error',
+            });
+            return null;
+        }
+    }, [projectId, toast, fetchProjectFiles]);
+
+
+    return {
+        tree,
+        setTree,
+        loading,
+        manualSave,
+        isSaving,
+        fetchFileContent,
+        createFileOrDirectory, // 새로운 함수 노출
+        deleteFileOrDirectory, // 새로운 함수 노출
+        updateFileOrDirectory, // 새로운 함수 노출
+    };
 };
