@@ -30,11 +30,10 @@ import { useAuth } from '../../contexts/AuthContext';
 const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    
-    // ✅ 1. 모든 인증 관련 상태와 함수를 AuthContext에서만 가져옵니다.
-    const { isLoggedIn, logout, openLoginModal, closeLoginModal, isLoginModalOpen } = useAuth();
-    
-    // Header 자체의 UI 상태들
+
+    // useAuth 훅을 통해 로그인 상태 및 모달 제어 함수 가져오기
+    const { isLoggedIn, logout, openLoginModal, closeLoginModal, isLoginModalOpen, isInitialized } = useAuth();
+
     const [showProjectTabs, setShowProjectTabs] = useState(false);
     const [currentProjectId, setCurrentProjectId] = useState(null);
     const [notifications, setNotifications] = useState([]);
@@ -67,8 +66,8 @@ const Header = () => {
     // 로그인 상태일 때만 초대 알림 목록을 불러옵니다.
     useEffect(() => {
         const fetchInvitations = async () => {
-            if (!isLoggedIn) {
-                setNotifications([]);
+            if (!isInitialized || !isLoggedIn) {
+                setNotifications([]); // 로그아웃 시 알림 초기화
                 return;
             }
             try {
@@ -79,6 +78,8 @@ const Header = () => {
                 if (!response.ok) throw new Error('Failed to fetch invitations');
                 
                 const data = await response.json();
+                
+                // ⭐ 중요: 서버 응답의 'status' 필드가 'PENDING'인 초대만 필터링합니다.
                 const pendingInvitations = data.filter(invite => invite.status === 'PENDING');
                 const formattedNotifications = pendingInvitations.map(invite => ({
                     id: invite.id,
@@ -91,7 +92,9 @@ const Header = () => {
             }
         };
         fetchInvitations();
-    }, [isLoggedIn]);
+    }, [isLoggedIn]); 
+
+ 
 
     // --- 핸들러 함수들 ---
     const handleLogout = () => {
@@ -101,8 +104,9 @@ const Header = () => {
 
     // ✅ 3. 이 함수는 이제 모달 닫기와 페이지 이동만 책임집니다.
     const handleLoginSuccess = () => {
-        closeLoginModal();
-        navigate('/dashboard');
+        closeLoginModal();      // AuthContext를 통해 모달을 닫습니다.
+        //navigate('/dashboard'); // 대시보드로 페이지를 이동시킵니다.
+        window.location.reload();
     };
 
     const toggleLang = () => {
@@ -149,6 +153,9 @@ const Header = () => {
     };
 
     const isActive = (path) => location.pathname.startsWith(path);
+    if (isLoggedIn === null) {
+      return null; // 또는 로딩 스피너
+    }
 
     return (
         <Box borderBottom="1px solid" borderColor="gray.200" bg="white" px={4} py={2}>
@@ -169,6 +176,8 @@ const Header = () => {
                     <Button size="sm" variant="outline" color="gray.600" fontWeight="medium" onClick={toggleLang}>
                         {lang.toUpperCase()}
                     </Button>
+                    {isInitialized && ( 
+                        <>
                     
                     {isLoggedIn && (
                         <Menu>
@@ -194,6 +203,8 @@ const Header = () => {
                                 )}
                             </MenuList>
                         </Menu>
+                    )}
+                    </>
                     )}
 
                     <Menu>
