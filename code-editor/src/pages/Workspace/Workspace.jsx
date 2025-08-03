@@ -76,7 +76,7 @@ const Workspace = () => {
                 return;
             }
             setIsLoadingSchema(true);
-            const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+            const token = localStorage.getItem("token");
             try {
                 const connRes = await axios.get(`${API_BASE_URL}/api/db-connections`, { headers: { Authorization: `Bearer ${token}` } });
                 const currentConnection = connRes.data.find(conn => conn.projectId === parseInt(projectId, 10));
@@ -114,7 +114,7 @@ const Workspace = () => {
 
         setIsExecuting(true);
         setQueryResults(null);
-        const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+        const token = localStorage.getItem("token");
         try {
             const response = await axios.post(`${API_BASE_URL}/api/query/execute`, 
                 { 

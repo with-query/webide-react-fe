@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 
 // ✅ 1. 일관된 키 사용을 위해 상수로 정의
-const TOKEN_KEY = "ACCESS_TOKEN_KEY";
+
 const NICKNAME_KEY = "nickname";
 
 const AuthContext = createContext(null);
@@ -21,8 +21,8 @@ export const AuthProvider = ({ children }) => {
 
     // 앱 로드 시 localStorage에서 토큰 및 닉네임 확인
     useEffect(() => {
-        const storedToken = localStorage.getItem(TOKEN_KEY);
-        const storedNickname = localStorage.getItem(NICKNAME_KEY);
+        const storedToken = localStorage.getItem("token");
+        const storedNickname = localStorage.getItem("token");
 
         if (storedToken) {
             setIsLoggedIn(true);
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
     // 로그인 처리 함수: 상태와 localStorage만 업데이트
       const login = (newToken, newNickname) => {
-        localStorage.setItem(TOKEN_KEY, newToken);
+        localStorage.setItem("token", newToken);
         localStorage.setItem(NICKNAME_KEY, newNickname);
         setIsLoggedIn(true);
         setUserNickname(newNickname);
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
 
     // 로그아웃 처리 함수: 상태와 localStorage만 업데이트
     const logout = () => {
-        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("token");
         localStorage.removeItem(NICKNAME_KEY);
         setIsLoggedIn(false);
         setUserNickname(null);

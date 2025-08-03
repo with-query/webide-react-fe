@@ -71,7 +71,7 @@ const Dashboard = () => {
             }
 
             setLoading(true);
-            //const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+            const token = localStorage.getItem("token");
             try {
                 const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -90,7 +90,7 @@ const Dashboard = () => {
                 console.error("대시보드 데이터 로딩 실패:", error);
                 // 401/403 에러 발생 시 토큰을 삭제하고 로그아웃 처리
                 if (error.response?.status === 401 || error.response?.status === 403) {
-                    localStorage.removeItem("ACCESS_TOKEN_KEY");
+                    localStorage.removeItem("token");
                     // 페이지를 새로고침하여 AuthContext가 변경된 상태를 인지하도록 합니다.
                     window.location.reload(); 
                 }
@@ -106,7 +106,7 @@ const Dashboard = () => {
         const calculateUsageStatus = async () => {
             setProjectCount(projects.length);
 
-            const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+            const token = localStorage.getItem("token");
             if (!token) {
                 setTableItemCount(0);
                 setQueryCount(0);
