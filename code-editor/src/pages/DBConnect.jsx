@@ -21,6 +21,7 @@ import {
 import { useState, useEffect } from "react";
 import axios from "axios"; // axios 임포트
 import { useNavigate } from "react-router-dom"; // useNavigate 임포트
+import { useAuth } from "../contexts/AuthContext"; 
 
 import CreateProjectModal from "../components/modals/CreateProjectModal";
 import EditDBConnectionModal from "../components/modals/EditDBConnectionModal";
@@ -29,6 +30,7 @@ import EditDBConnectionModal from "../components/modals/EditDBConnectionModal";
 const BASE_URL = "http://20.196.89.99:8080"; 
 
 const DBConnect = () => {
+  const { user } = useAuth(); 
   const [projects, setProjects] = useState([]);
   const [dbConnections, setDbConnections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -237,6 +239,7 @@ const DBConnect = () => {
       username: data.dbConfig.user || data.dbConfig.username,
       password: data.dbConfig.password,
       driverClassName: driverClassName,
+      createdById: user.id,
     };
 
     try {
