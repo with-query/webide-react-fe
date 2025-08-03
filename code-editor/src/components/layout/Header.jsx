@@ -23,7 +23,7 @@ import { FiBell } from "react-icons/fi";
 
 // Modal and Context Imports
 import LoginModal from "../modals/LoginModal";
-import SignupModal from "../modals/SignupModal";
+import SignupModal from "../modals/SignUpModal";
 import ForgotPasswordModal from "../modals/ForgotPasswordModal";
 import InvitationModal from "../modals/InvitationModal";
 import { useAuth } from '../../contexts/AuthContext'; // AuthContext 임포트
