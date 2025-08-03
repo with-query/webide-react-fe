@@ -1,0 +1,24 @@
+.delete-modal {
+  width: 400px;
+}
+
+.delete-message {
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.delete-message strong {
+  font-weight: 700;
+  color: #d57239;
+}
+
+.delete-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0;
+}

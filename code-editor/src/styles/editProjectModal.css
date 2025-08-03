@@ -1,0 +1,128 @@
+.modal label, .db-test-title {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role-capsule {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.role-capsule.owner {
+  color: #d57239; 
+  border: 1px solid #d57239;
+}
+
+.role-capsule.member {
+  color: #999; 
+  border: 1px solid #999;
+}
+
+.modal input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #cab8ae;
+  border-radius: 4px;
+  background-color: #f9f8f6;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.modal input:not([readOnly]):focus {
+  outline: none;
+  border: 2px solid #cab8ae; 
+}
+
+input::placeholder {
+  color: #cac7c6;
+}
+
+.edit-project-textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #cab8ae;
+  border-radius: 4px;
+  background-color: #f9f8f6;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.edit-project-textarea:focus {
+  outline: none; 
+  border: 2px solid #cab8ae; 
+}
+.read-only-input {
+  color:#cab8ae;
+  padding: 8px;
+  margin-top: 8px;
+  background-color: #f9f8f6;
+  border-radius: 4px;
+  border: 1px solid #cab8ae;
+  width: 100%;
+  min-height: 38px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.modal input[readOnly] {
+  cursor: default;
+}
+
+.modal input[readOnly]:focus {
+  outline: none;
+  border: 1px solid #cab8ae;
+}
+
+.edit-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0;
+}
+
+.edit-cancel-btn {
+  color: #d57239;
+  border: 1px solid #d57239;
+  margin: 0 !important; 
+}
+
+.edit-save-btn {
+  color: #fff;
+  border: 1px solid #d57239;
+  background-color: #d57239;
+  margin: 0;
+}
+
+.edit-cancel-btn:hover {
+  background-color: #f4f2f0;
+}
+
+.edit-save-btn:hover {
+    background-color: #e5793a;
+}
+
+.edit-cancel-btn, .edit-save-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+}
+

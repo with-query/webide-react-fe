@@ -1,0 +1,295 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background:  #f9f8f6;
+  border-radius: 6px;
+  padding: 24px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: fadeIn 0.2s ease;
+}
+
+.modal h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal label, .db-test-title {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.modal input,
+.modal select,
+.modal textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #cab8ae;
+  border-radius: 4px;
+  background-color: #f9f8f6;
+  font-weight: 500;
+  font-size: 14px;
+  resize: none;
+}
+
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+  outline: none; 
+  border: 2px solid #cab8ae; 
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #cac7c6;
+}
+
+.modal-buttons.multi-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-buttons .cancel-btn {
+    margin-right: auto;
+}
+
+.modal-buttons .previous-btn,
+.modal-buttons .next-btn {
+  margin-left: 8px;
+}
+
+.cancel-btn:hover, .previous-btn:hover {
+  background-color: #f4f2f0;
+}
+
+.next-btn:hover:hover {
+    background-color: #e5793a;
+}
+
+.cancel-btn, .next-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+}
+
+.cancel-btn, .previous-btn {
+  color: #d57239;
+  border: 1px solid #d57239;
+}
+
+.previous-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  color: #d57239;
+  border: 1px solid #d57239;
+  background-color: transparent;
+}
+
+.next-btn {
+  color: #fff;
+  border: 1px solid #d57239;
+  background-color: #d57239;
+}
+
+.step1 {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.step1 input[type="radio"] {
+  margin-right: 7px;
+  width: 20px;
+}
+
+.step1 label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.step-description {
+ margin-bottom: 15px;
+ color: #d57239;
+ font-size: 16px;
+ font-weight: 600;
+}
+
+/* 4단계 DB 연결 테스트 스타일 */
+.step4 {
+  margin: 20px 0;
+}
+
+.db-test-section {
+  width: 100%;
+}
+
+/* 연결 정보 요약 */
+.db-config-summary {
+  background: #f4f2f0;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #cab8ae;
+}
+
+.summary-title {
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.summary-content {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.summary-content p {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.summary-content strong {
+  color: #333;
+  margin-right: 8px;
+}
+
+.test-button-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.test-connection-btn {
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #d57239;
+  cursor: pointer;
+  background-color: #d57239;
+  color: #fff;
+  transition: all 0.2s ease;
+  min-width: 200px;
+}
+
+.test-connection-btn:hover:not(:disabled) {
+  background-color: #e5793a;
+  border-color: #e5793a;
+}
+
+.test-connection-btn.testing {
+  background-color: #cab8ae;
+  border-color: #cab8ae;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.test-connection-btn:disabled {
+  opacity: 0.6;
+}
+
+.test-result {
+  padding: 14px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 1px solid #cab8ae;
+  background: #f4f2f0;
+}
+
+.result-icon svg {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+}
+
+.result-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.result-message {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.test-result.success {
+  color: #155724;
+}
+
+.test-result.success .result-title {
+  color: #28a745;
+}
+
+.test-result.success .result-icon svg {
+  color: #28a745;
+}
+
+.test-result.fail {
+  color: #721c24;
+}
+
+.test-result.fail .result-title {
+  color: #dc3545;
+}
+
+.test-result.fail .result-icon svg {
+  color: #dc3545;
+}
+
+.test-result.loading {
+  color: #cab8ae;
+}
+
+.test-result.loading .result-title {
+  color: #ac968a;
+}
+
+.test-result.loading .result-icon svg {
+  color: #ac968a;
+  width: 34px;
+  height: 34px;
+}
+
+.test-result.loading .result-icon {
+  animation: spin 1s linear infinite;
+  transform-origin: fill-box;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
