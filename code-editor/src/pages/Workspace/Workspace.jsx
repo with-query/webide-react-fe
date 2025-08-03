@@ -67,6 +67,42 @@ const Workspace = () => {
 
     const [dbConnectionId, setDbConnectionId] = useState(null);
 
+    const handleCreateTable = useCallback((newTableName) => {
+        if (!newTableName) return;
+
+        const newTable = {
+            tableName: newTableName,
+            // 기본적으로 id 컬럼을 포함시켜 줍니다.
+            columns: [{ name: 'id', type: 'INT', pk: true, selected: true }],
+        };
+
+        setDbSchema(prevSchema => {
+            // 이전 스키마가 없거나 테이블이 없는 경우를 대비합니다.
+            const tables = prevSchema?.tables ? [...prevSchema.tables] : [];
+            
+            // 중복된 테이블 이름이 있는지 확인합니다.
+            if (tables.some(table => table.tableName === newTableName)) {
+                toast({
+                    title: "오류",
+                    description: "이미 존재하는 테이블 이름입니다.",
+                    status: "error",
+                });
+                return prevSchema;
+            }
+
+            return {
+                ...prevSchema,
+                tables: [...tables, newTable],
+            };
+        });
+
+        toast({
+            title: "테이블 생성됨",
+            description: `'${newTableName}' 테이블이 스키마에 추가되었습니다.`,
+            status: "success",
+        });
+    }, [toast]);
+
     // DB 스키마 로딩 로직
     useEffect(() => {
         const fetchDbSchema = async () => {
@@ -172,6 +208,33 @@ const Workspace = () => {
     const handleDeleteConnection = useCallback((connectionId) => {
         setConnections(prev => prev.filter(c => c.id !== connectionId));
     }, []);
+
+    const handleDeleteTable = useCallback((tableNameToDelete) => {
+        // 스키마 목록에서 해당 테이블을 제거합니다.
+        setDbSchema(prev => ({
+            ...prev,
+            tables: prev.tables.filter(t => t.tableName !== tableNameToDelete)
+        }));
+
+        // 캔버스 위에서 해당 테이블 노드를 제거합니다.
+        setNodes(prev => {
+            const newNodes = { ...prev };
+            // tableName이 노드의 id와 같다는 규칙을 이용합니다.
+            delete newNodes[tableNameToDelete];
+            return newNodes;
+        });
+
+        // 해당 노드와 연결된 모든 연결선을 제거합니다.
+        setConnections(prev => prev.filter(conn => 
+            conn.from.fromNodeId !== tableNameToDelete && conn.to.toNodeId !== tableNameToDelete
+        ));
+
+        toast({
+            title: "테이블 삭제됨",
+            description: `'${tableNameToDelete}' 테이블이 스키마에서 제거되었습니다.`,
+            status: "info",
+        });
+    }, [toast]);
     
     // SQL 생성 로직 (단일 정의)
    useEffect(() => {
@@ -190,7 +253,12 @@ const Workspace = () => {
                     <Panel defaultSize={75} minSize={40}>
                         <PanelGroup direction="horizontal">
                             <Panel defaultSize={15} minSize={10}>
-                                <SchemaSidebar dbSchema={dbSchema} isLoading={isLoadingSchema} />
+                                <SchemaSidebar 
+                                    dbSchema={dbSchema} 
+                                    isLoading={isLoadingSchema}
+                                    onCreateTable={handleCreateTable} // ✅ 이 코드를 추가해주세요.
+                                    onDeleteTable={handleDeleteTable}
+                                />
                             </Panel>
                             <PanelResizeHandle />
                             <Panel defaultSize={45} minSize={30}>

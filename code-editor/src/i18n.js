@@ -137,6 +137,7 @@ const resources = {
         
         "PENDING" : "보류중",
         "ACCEPTED" : "수락",
+        "REJECTED": "거절",
         "Invited to" : "초대",
         "Sent Invitations" : "보낸 초대 목록",
         "No sent invitations." : "보낸 초대 내역이 없습니다.",
@@ -266,6 +267,7 @@ const resources = {
         "Send" : "Send",
         "Decline" : "Decline",
         "Accept" : "Accept",
+        "REJECTED": "ReJECTED",
 
         "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?",
         "These steps are optional and can be configured later." : "These steps are optional and can be configured later.",
