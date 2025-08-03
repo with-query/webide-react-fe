@@ -1,129 +1,114 @@
-// src/pages/Workspace/components/WhereClauseBuilder.jsx
+// WhereClauseBuilder.jsx (전체 수정 코드)
 
 import React from 'react';
-import { Box, HStack, VStack, Input, Button, IconButton, Text, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Box, Button, HStack, Select, Input, IconButton, Text, VStack } from '@chakra-ui/react';
+import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 
 const WhereClauseBuilder = ({ nodes, clauses, setClauses }) => {
-   const allColumns = nodes.flatMap(node => 
-        (node.data.columns || []).map(col => `${node.data.alias || node.data.tableName}.${col.name}`)
+    // nodes 배열에서 모든 컬럼을 [{ label: '테이블.컬럼', value: '테이블.컬럼' }] 형태로 변환
+    const allColumns = nodes.flatMap(node => 
+        (node.data.columns || []).map(col => ({
+            label: `${node.data.alias || node.data.tableName}.${col.name}`,
+            value: `${node.data.alias || node.data.tableName}.${col.name}`
+        }))
     );
 
-  const operators = ['=', '!=', '>', '<', '>=', '<=', 'LIKE', 'IN', 'IS NULL', 'IS NOT NULL'];
-
-  const handleAddWhereClause = (node, column) => {
-    const newClause = {
-        // 👇 '테이블별칭.컬럼명' 또는 '테이블명.컬럼명' 형태로 저장
-        column: `${node.data.alias || node.data.tableName}.${column.name}`, 
-        operator: '=',
-        value: '',
-        connector: 'AND'
+    // ✅ 불변성을 지키도록 수정한 상태 업데이트 함수
+    const handleClauseChange = (index, field, value) => {
+        const newClauses = clauses.map((clause, i) => {
+            // 현재 수정하려는 인덱스와 같으면, 새로운 객체를 만들어 반환합니다.
+            if (i === index) {
+                return { ...clause, [field]: value };
+            }
+            // 다른 객체들은 그대로 둡니다.
+            return clause;
+        });
+        setClauses(newClauses);
     };
 
-    setWhereClauses(prev => [...prev, newClause]);
-};
-  
-  // const handleClauseChange = (index, field, value) => {
-  //   const newClauses = [...clauses];
-  //   newClauses[index][field] = value;
-  //   setClauses(newClauses);
-  // };
+    const addClause = () => {
+        // 첫 번째 컬럼을 기본값으로 설정해 줄 수 있습니다.
+        const defaultColumn = allColumns.length > 0 ? allColumns[0].value : '';
+        setClauses([...clauses, { column: defaultColumn, operator: '=', value: '', connector: 'AND' }]);
+    };
 
-  const addClause = () => {
-    setClauses([...clauses, { id: Date.now(), column: '', operator: '=', value: '', connector: 'AND' }]);
-  };
+    const removeClause = (indexToRemove) => {
+        setClauses(clauses.filter((_, index) => index !== indexToRemove));
+    };
 
-  const removeClause = (index) => {
-    setClauses(clauses.filter((_, i) => i !== index));
-  };
-
-  return (
-    <Box p={4} bg="brand.100" borderRadius="md" height="100%">
-      <HStack mb={2}>
-        <Text fontWeight="bold">WHERE 절</Text>
-        <Button size="xs" leftIcon={<AddIcon />} onClick={addClause}>조건 추가</Button>
-      </HStack>
-      <VStack align="stretch" spacing={2}>
-        {clauses.map((clause, index) => (
-          // ✨ 아이템들을 수직 중앙 정렬합니다.
-          <HStack key={clause.id} spacing={2} align="center">
-            {index > 0 && (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  size="sm"
-                  variant="outline" // 테두리 스타일 통일
-                  bg="white" // 배경색 통일
-                  w="150px" // 너비를 약간 늘림
-                  fontWeight="normal"
-                  rightIcon={<ChevronDownIcon />}
-                  textAlign="center" 
-                  pl="8" // 좌우 패딩 추가
-                  justifyContent="space-between"
-                >
-                  {clause.connector}
-                </MenuButton>
-                <MenuList zIndex={20} minW="90px" fontSize="14px">
-                  <MenuItem onClick={() => handleClauseChange(index, 'connector', 'AND')} justifyContent="center">AND</MenuItem>
-                  <MenuItem onClick={() => handleClauseChange(index, 'connector', 'OR')} justifyContent="center">OR</MenuItem>
-                </MenuList>
-              </Menu>
-            )}
-            <Menu>
-              <MenuButton
-                as={Button}
-                size="sm"
-                variant="outline"
-                bg="white"
-                flex={1} // 유연한 너비
-                minW="150px" // 최소 너비
-                fontWeight="normal"
-                textAlign="center"
-                pl="6"
-                rightIcon={<ChevronDownIcon />}
-                // ✨ 긴 텍스트가 잘리지 않고 ...으로 표시되도록
-                overflow="hidden"
-                textOverflow="ellipsis"
-                whiteSpace="nowrap"
-              >
-                {clause.column || "컬럼 선택"}
-              </MenuButton>
-              <MenuList zIndex={20} maxH="200px" overflowY="auto" fontSize="14px" >
-                {allColumns.map(colName => <MenuItem key={colName} onClick={() => handleClauseChange(index, 'column', colName)}>{colName}</MenuItem>)}
-              </MenuList>
-            </Menu>
-            <Menu>
-              <MenuButton
-                as={Button}
-                size="sm"
-                variant="outline"
-                bg="white"
-                w="120px"
-                fontWeight="normal"
-                pl="6"
-                rightIcon={<ChevronDownIcon />}
-              >
-                {clause.operator}
-              </MenuButton>
-              <MenuList zIndex={20} fontSize="14px" minW="auto">
-                {operators.map(op => <MenuItem key={op} onClick={() => handleClauseChange(index, 'operator', op)} justifyContent="center">{op}</MenuItem>)}
-              </MenuList>
-            </Menu>
-            <Input 
-              size="sm" 
-              placeholder="값 입력" 
-              value={clause.value}
-              onChange={(e) => handleClauseChange(index, 'value', e.target.value)}
-              bg="white"
-              variant="outline"
-              px="30"
-            />
-            <IconButton size="sm" icon={<DeleteIcon />} onClick={() => removeClause(index)} />
-          </HStack>
-        ))}
-      </VStack>
-    </Box>
-  );
+    return (
+        <VStack spacing={4} align="stretch" w="100%" bg="brand.100">
+            <Text fontWeight="bold" fontSize="md">WHERE 조건</Text>
+            {clauses.map((clause, index) => (
+                <HStack key={index} spacing={2}>
+                    {index > 0 && (
+                        <Select 
+                            w="100px" 
+                            size="sm"
+                            bg="white"
+                            value={clause.connector} 
+                            onChange={(e) => handleClauseChange(index, 'connector', e.target.value)}
+                        >
+                            <option value="AND">AND</option>
+                            <option value="OR">OR</option>
+                        </Select>
+                    )}
+                    <Select
+                        placeholder="컬럼 선택"
+                        size="sm"
+                        bg="white"
+                        value={clause.column}
+                        onChange={(e) => handleClauseChange(index, 'column', e.target.value)}
+                    >
+                        {allColumns.map(col => (
+                            <option key={col.value} value={col.value}>
+                                {col.label}
+                            </option>
+                        ))}
+                    </Select>
+                    <Select 
+                        w="120px" 
+                        size="sm"
+                        bg="white"
+                        value={clause.operator} 
+                        onChange={(e) => handleClauseChange(index, 'operator', e.target.value)}
+                    >
+                        <option value="=">=</option>
+                        <option value="!=">!=</option>
+                        <option value=">">&gt;</option>
+                        <option value="<">&lt;</option>
+                        <option value=">=">&gt;=</option>
+                        <option value="<=">&lt;=</option>
+                        <option value="LIKE">LIKE</option>
+                    </Select>
+                    <Input 
+                        placeholder="값 입력" 
+                        size="sm"
+                        value={clause.value} 
+                        bg="white"
+                        onChange={(e) => handleClauseChange(index, 'value', e.target.value)} 
+                    />
+                    <IconButton
+                        aria-label="Delete clause"
+                        icon={<DeleteIcon />}
+                        size="sm"
+                        bg="#d57239"
+                        variant="ghost"
+                        color="white"
+                        onClick={() => removeClause(index)}
+                    />
+                </HStack>
+            ))}
+            <Button 
+                size="sm" 
+                leftIcon={<AddIcon />} 
+                onClick={addClause} 
+                alignSelf="flex-start"
+            >
+                조건 추가
+            </Button>
+        </VStack>
+    );
 };
 
 export default WhereClauseBuilder;
