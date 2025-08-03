@@ -3,6 +3,7 @@ import { useDisclosure } from '@chakra-ui/react';
 
 // ✅ 1. 일관된 키 사용을 위해 상수로 정의
 
+const ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY";
 const NICKNAME_KEY = "nickname";
 
 const AuthContext = createContext(null);
@@ -21,33 +22,40 @@ export const AuthProvider = ({ children }) => {
 
     // 앱 로드 시 localStorage에서 토큰 및 닉네임 확인
     useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        const storedNickname = localStorage.getItem("token");
+        try {
+            const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const storedNickname = localStorage.getItem(NICKNAME_KEY);
 
-        if (storedToken) {
-            setIsLoggedIn(true);
-            setUserNickname(storedNickname);
-            setToken(storedToken);
+            if (storedToken) {
+                setIsLoggedIn(true);
+                setUserNickname(storedNickname);
+                setToken(storedToken);
+            }
+        } catch (error) {
+            console.error("Error reading from localStorage", error);
+        } finally {
+            // ✅ 2. localStorage 확인 작업이 끝나면 초기화 완료로 설정
+            setIsInitialized(true);
         }
-        setIsInitialized(true);
     }, []);
 
-    // 로그인 처리 함수: 상태와 localStorage만 업데이트
-      const login = (newToken, newNickname) => {
-        localStorage.setItem("token", newToken);
+    const login = (newToken, newNickname) => {
+        localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
         localStorage.setItem(NICKNAME_KEY, newNickname);
         setIsLoggedIn(true);
         setUserNickname(newNickname);
         setToken(newToken);
-      };
+    };
 
     // 로그아웃 처리 함수: 상태와 localStorage만 업데이트
     const logout = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(NICKNAME_KEY);
         setIsLoggedIn(false);
         setUserNickname(null);
         setToken(null);
+        // ✅ 3. 로그아웃 시 페이지를 새로고침하여 모든 컴포넌트의 상태를 초기화합니다.
+        window.location.href = '/'; 
     };
 
     const authContextValue = {

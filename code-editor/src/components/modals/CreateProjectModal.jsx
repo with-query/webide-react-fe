@@ -187,7 +187,7 @@ const CreateProjectModal = ({
         }, 1000);
 
     const BASE_URL_FOR_TEST = "http://20.196.89.99:8080"; // 테스트용 URL
-    const token = localStorage.getItem("token"); // 토큰도 필요할 것임 // DB 연결 테스트 시에도 url, driverClassName, username을 백엔드 형식에 맞춰 구성
+    const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // 토큰도 필요할 것임 // DB 연결 테스트 시에도 url, driverClassName, username을 백엔드 형식에 맞춰 구성
 
     //const currentUserId = 0;
 
