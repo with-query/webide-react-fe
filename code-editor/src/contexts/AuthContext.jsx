@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userNickname, setUserNickname] = useState(null);
     const [token, setToken] = useState(null);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const { 
         isOpen: isLoginModalOpen, 
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
             setUserNickname(storedNickname);
             setToken(storedToken);
         }
+        setIsInitialized(true);
     }, []);
 
     // 로그인 처리 함수: 상태와 localStorage만 업데이트
@@ -57,6 +59,7 @@ export const AuthProvider = ({ children }) => {
         isLoginModalOpen,
         openLoginModal,
         closeLoginModal,
+        isInitialized,
     };
 
     return (

@@ -54,10 +54,11 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
             const data = await res.json();
 
             if (res.ok) {
-                // 1. Context의 login 함수를 호출하여 전역 상태를 업데이트합니다.
-                login(data.token, data.nickname);
+               const expiresInSeconds = data.expiresIn || (30 * 60); 
+              // 1. Context의 login 함수를 호출하여 전역 상태를 업데이트합니다.
 
-
+          
+        login(data.token, data.nickname, expiresInSeconds); 
                 if (rememberEmail) {
                     localStorage.setItem("savedEmail", email);
                 } else {

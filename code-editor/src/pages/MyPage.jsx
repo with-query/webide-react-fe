@@ -253,7 +253,7 @@ export default function MyPage() {
           boxShadow="md"
         >
           <Flex direction="column" align="center">
-            <Avatar size="xl" src="/profile.png" mb={3} />
+            <Avatar size="xl" src="/profile.png" mb={3}  background="#d57239" />
             <Text fontWeight="bold" fontSize="lg" color="text.primary">
               {user?.nickname || "Guest"}
             </Text>
