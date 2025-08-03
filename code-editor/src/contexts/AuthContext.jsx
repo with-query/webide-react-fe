@@ -1,9 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 
-// ✅ 1. 일관된 키 사용을 위해 상수로 정의
-
-export const ACCESS_TOKEN_KEY = "token";
+// ✅ 1. 앱 전체에서 사용할 토큰 키를 'token'으로 명확하게 정의합니다.
+const TOKEN_KEY = "token";
 const NICKNAME_KEY = "nickname";
 
 const AuthContext = createContext(null);
@@ -20,10 +19,10 @@ export const AuthProvider = ({ children }) => {
         onClose: closeLoginModal 
     } = useDisclosure();
 
-    // 앱 로드 시 localStorage에서 토큰 및 닉네임 확인
     useEffect(() => {
         try {
-            const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+            // ✅ 올바른 키로 토큰을 조회합니다.
+            const storedToken = localStorage.getItem(TOKEN_KEY);
             const storedNickname = localStorage.getItem(NICKNAME_KEY);
 
             if (storedToken) {
@@ -34,27 +33,26 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Error reading from localStorage", error);
         } finally {
-            // ✅ 2. localStorage 확인 작업이 끝나면 초기화 완료로 설정
             setIsInitialized(true);
         }
     }, []);
 
     const login = (newToken, newNickname) => {
-        localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
+        // ✅ 올바른 키로 토큰을 저장합니다.
+        localStorage.setItem(TOKEN_KEY, newToken);
         localStorage.setItem(NICKNAME_KEY, newNickname);
         setIsLoggedIn(true);
         setUserNickname(newNickname);
         setToken(newToken);
     };
 
-    // 로그아웃 처리 함수: 상태와 localStorage만 업데이트
     const logout = () => {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        // ✅ 2. 여기가 핵심입니다! 오타를 수정하여 올바른 키로 토큰을 삭제합니다.
+        localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(NICKNAME_KEY);
         setIsLoggedIn(false);
         setUserNickname(null);
         setToken(null);
-        // ✅ 3. 로그아웃 시 페이지를 새로고침하여 모든 컴포넌트의 상태를 초기화합니다.
         window.location.href = '/'; 
     };
 
@@ -77,7 +75,6 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// 다른 컴포넌트에서 쉽게 사용하기 위한 커스텀 훅
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === null) {

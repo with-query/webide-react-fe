@@ -18,7 +18,7 @@ const ChatLayout = () => {
 
   useEffect(() => {
     const fetchProjectsAndDmUsers = async () => {
-      const token = localStorage.getItem('ACCESS_TOKEN_KEY');
+      const token = localStorage.getItem('token');
 
       if (!token) {
         toast({
@@ -66,7 +66,7 @@ const ChatLayout = () => {
         });
 
         if (err.response?.status === 401 || err.response?.status === 403) {
-          localStorage.removeItem("ACCESS_TOKEN_KEY");
+          localStorage.removeItem("token");
           navigate("/login");
         }
       }

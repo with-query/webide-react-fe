@@ -18,7 +18,7 @@ const ChatLayout = () => {
   // projectList와 currentUserInfo를 기반으로 DM 사용자 목록을 구성하는 함수
   // useCallback을 사용하여 불필요한 재생성을 방지합니다.
   const buildDmUserList = useCallback(async () => {
-    const token = localStorage.getItem('ACCESS_TOKEN_KEY');
+    const token = localStorage.getItem('token');
     if (!token || !currentUserInfo || projectList.length === 0) {
       console.log("DM 사용자 목록을 구성할 준비가 안됨 (토큰, 사용자 정보, 프로젝트 목록 부족).");
       setDmUserList([]); // 준비 안될 경우 초기화
@@ -58,7 +58,7 @@ const ChatLayout = () => {
     // currentUserInfo와 projectList가 모두 로드된 후에 DM 사용자 목록을 구성합니다.
     if (currentUserInfo && projectList.length > 0) {
       buildDmUserList();
-    } else if (!localStorage.getItem('ACCESS_TOKEN_KEY')) {
+    } else if (!localStorage.getItem('token')) {
        // 토큰이 없으면 로그인 페이지로 리다이렉트
        toast({
          title: "인증 필요",

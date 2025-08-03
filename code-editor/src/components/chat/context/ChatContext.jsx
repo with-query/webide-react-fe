@@ -436,7 +436,7 @@ export const ChatProvider = ({ children }) => {
     // 1. 사용자 정보 로드 (컴포넌트 마운트 시 한 번)
     useEffect(() => {
         const fetchUserInfo = async () => {
-            const token = localStorage.getItem('ACCESS_TOKEN_KEY');
+            const token = localStorage.getItem('token');
             tokenRef.current = token;
 
             if (!token) {

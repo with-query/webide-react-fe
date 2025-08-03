@@ -50,7 +50,7 @@ const DBConnect = () => {
   const fetchDBConnectData = async () => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       toast({
@@ -95,7 +95,7 @@ const DBConnect = () => {
       });
 
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem("ACCESS_TOKEN_KEY");
+        localStorage.removeItem("token");
         navigate("/login");
       }
     } finally {
@@ -207,7 +207,7 @@ const DBConnect = () => {
   const handleAddNewDBConnection = async (data) => {
     if (!selectedProjectForNewConnection) return;
 
-    const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+    const token = localStorage.getItem("token");
     if (!token) {
       toast({ title: "로그인이 필요합니다.", status: "warning" });
       navigate("/login");
@@ -299,7 +299,7 @@ const DBConnect = () => {
 
   // DB 연결 편집 저장 핸들러
   const handleSaveEditedDb = async (updatedDb) => {
-    const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+    const token = localStorage.getItem("token");
     if (!token) {
       toast({ title: "로그인이 필요합니다.", status: "warning" });
       navigate("/login");
@@ -379,7 +379,7 @@ const DBConnect = () => {
       return;
     }
 
-    const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+    const token = localStorage.getItem("token");
     if (!token) {
       toast({ title: "로그인이 필요합니다.", status: "warning" });
       navigate("/login");
