@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import useAuth from "../AuthService";
 
+
 const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSuccess }) => {
   const { t } = useTranslation();
   const toast = useToast();
@@ -27,6 +28,7 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberEmail, setRememberEmail] = useState(false);
+
 
   const BASE_URL = "http://20.196.89.99:8080";
 
@@ -68,10 +70,9 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
       const data = await res.json();
 
       if (res.ok) {
-        // 서버에서 액세스 토큰과 함께 만료 시간을 'expiresIn' 필드로 받아온다고 가정
-        // 예를 들어, data.expiresIn = 3600 (초)
-        const expiresInSeconds = data.expiresIn || (60 * 60); // 기본값 1시간 (3600초)
-        login(data.token, data.nickname, expiresInSeconds); // useAuth의 login 함수 호출
+
+        const expiresInSeconds = data.expiresIn || (30 * 60); 
+        login(data.token, data.nickname, expiresInSeconds); 
 
         if (rememberEmail) {
           localStorage.setItem("savedEmail", email);

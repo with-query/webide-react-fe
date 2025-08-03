@@ -370,7 +370,7 @@ export default function MyPage() {
           </Box>
 
           {/* 비밀번호 변경 */}
-          <Box p={6} borderRadius="xl" boxShadow="md">
+          <Box p={6} borderRadius="xl" boxShadow="md" bg="white">
             <Text fontWeight="semibold" mb={4} color="text.primary">
               {t("Change Password")}
             </Text>
