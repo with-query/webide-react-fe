@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Grid, useDisclosure, useToast } from "@chakra-ui/react";
+import { Box, Grid, useDisclosure, useToast, Avatar } from "@chakra-ui/react";
 import axios from "axios";
 import { useAuth } from '../contexts/AuthContext'; 
 
@@ -53,12 +53,15 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const toast = useToast();
     const { t } = useTranslation();
-    const { isLoggedIn, openLoginModal } = useAuth(); 
+    const { isLoggedIn, openLoginModal, isInitialized } = useAuth(); 
 
     const BASE_URL = "http://20.196.89.99:8080";
+    const { token } = useAuth();
+
 
     useEffect(() => {
         const fetchDashboardData = async () => {
+            if (!isInitialized) return;
             // ✅ 2. 이제 localStorage 대신, Context의 isLoggedIn 상태로 모든 것을 판단합니다.
             if (!isLoggedIn) {
                 // 로그인이 안 되어있다면, 모달을 열고 함수를 즉시 종료합니다.
@@ -68,7 +71,7 @@ const Dashboard = () => {
             }
 
             setLoading(true);
-            const token = localStorage.getItem("ACCESS_TOKEN_KEY");
+            //const token = localStorage.getItem("ACCESS_TOKEN_KEY");
             try {
                 const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -97,7 +100,7 @@ const Dashboard = () => {
         };
 
         fetchDashboardData();
-    }, [navigate, toast, openLoginModal]);
+    }, [isLoggedIn, toast]);
 
     useEffect(() => {
         const calculateUsageStatus = async () => {
@@ -544,11 +547,13 @@ const Dashboard = () => {
                                         role="button"
                                         tabIndex={0}
                                     >
-                                    {user.profileUrl?.trim() ? (
+                                   {/*} {user.profileUrl?.trim() ? (
                                         <img className="user-profile" src={user.profileUrl} alt="프로필" />
                                     ) : (
                                         <div className="user-initial">{user.nickname?.[0] || "U"}</div>
-                                    )}
+                                    )} */}
+                                    <Avatar width="100%" height="100%" src="/profile.png"  background="#d57239" />
+                                    
                                     </div>
                                     <div className="user-info">
                                     <div>{user.name || user.nickname}</div>

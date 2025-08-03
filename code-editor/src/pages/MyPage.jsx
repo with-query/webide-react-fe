@@ -253,7 +253,7 @@ export default function MyPage() {
           boxShadow="md"
         >
           <Flex direction="column" align="center">
-            <Avatar size="xl" src="/profile.png" mb={3} />
+            <Avatar size="xl" src="/profile.png" mb={3}  background="#d57239" />
             <Text fontWeight="bold" fontSize="lg" color="text.primary">
               {user?.nickname || "Guest"}
             </Text>
@@ -370,7 +370,7 @@ export default function MyPage() {
           </Box>
 
           {/* 비밀번호 변경 */}
-          <Box p={6} borderRadius="xl" boxShadow="md">
+          <Box p={6} borderRadius="xl" boxShadow="md" bg="white">
             <Text fontWeight="semibold" mb={4} color="text.primary">
               {t("Change Password")}
             </Text>

@@ -122,6 +122,9 @@ const resources = {
         "Currently invited members" : "현재 초대된 팀원들",
         "Invite" : "초대하기 (이메일, 쉼표로 구분)",
         "Send" : "전송",
+        "Decline" : "거부",
+        "Accept" : "수락",
+
 
         "confirm_delete_project_message": "<0>{{projectName}}</0> 프로젝트를<1/>정말 삭제하시겠습니까?",
         "These steps are optional and can be configured later." : "해당 단계는 선택사항으로 추후에 설정이 가능합니다." ,
@@ -261,6 +264,8 @@ const resources = {
         "Currently invited members" : "Currently invited members",
         "Invite" : "Invite (Emails, separated by commas)",
         "Send" : "Send",
+        "Decline" : "Decline",
+        "Accept" : "Accept",
 
         "confirm_delete_project_message": "Are you sure you want to delete <0>{{projectName}}</0>?",
         "These steps are optional and can be configured later." : "These steps are optional and can be configured later.",

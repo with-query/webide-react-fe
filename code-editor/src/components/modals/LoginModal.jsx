@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 
+
 const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSuccess }) => {
   const { t } = useTranslation();
   const toast = useToast();
@@ -27,6 +28,7 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberEmail, setRememberEmail] = useState(false);
+
 
   const BASE_URL = "http://20.196.89.99:8080";
 
@@ -52,14 +54,17 @@ const LoginModal = ({ isOpen, onClose, onOpenSignup, onOpenForgot, onLoginSucces
             const data = await res.json();
 
             if (res.ok) {
-                // 1. Context의 login 함수를 호출하여 전역 상태를 업데이트합니다.
-                login(data.token, data.nickname);
+               const expiresInSeconds = data.expiresIn || (30 * 60); 
+              // 1. Context의 login 함수를 호출하여 전역 상태를 업데이트합니다.
 
+          
+        login(data.token, data.nickname, expiresInSeconds); 
                 if (rememberEmail) {
                     localStorage.setItem("savedEmail", email);
                 } else {
                     localStorage.removeItem("savedEmail");
                 }
+
 
                 toast({
                     title: data.message || t("Login successful"),
