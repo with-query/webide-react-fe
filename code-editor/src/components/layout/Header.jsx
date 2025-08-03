@@ -33,7 +33,7 @@ const Header = () => {
     const navigate = useNavigate();
 
     // useAuth 훅을 통해 로그인 상태 및 모달 제어 함수 가져오기
-    const { isLoggedIn, logout, openLoginModal, closeLoginModal, isLoginModalOpen } = useAuth();
+    const { isLoggedIn, logout, openLoginModal, closeLoginModal, isLoginModalOpen, isInitialized } = useAuth();
 
     const [showProjectTabs, setShowProjectTabs] = useState(false);
     const [currentProjectId, setCurrentProjectId] = useState(null);
@@ -64,7 +64,7 @@ const Header = () => {
     // 백엔드 status 필드를 활용하여 'PENDING' 상태의 초대만 가져옵니다.
     useEffect(() => {
         const fetchInvitations = async () => {
-            if (!isLoggedIn) {
+            if (!isInitialized || !isLoggedIn) {
                 setNotifications([]); // 로그아웃 시 알림 초기화
                 return;
             }
@@ -91,7 +91,7 @@ const Header = () => {
                 
                 const data = await response.json();
                 
-                // ⭐ 중요: 서버 응답의 'status' 필드가 'PENDING'인 초대만 필터링합니다.
+
                 const pendingInvitations = data.filter(invite => invite.status === 'PENDING');
 
                 const formattedNotifications = pendingInvitations.map(invite => ({
@@ -105,7 +105,9 @@ const Header = () => {
             }
         };
         fetchInvitations();
-    }, [isLoggedIn]); // isLoggedIn 상태가 변경될 때마다 알림을 다시 불러옵니다.
+    }, [isLoggedIn]); 
+
+ 
 
     // --- 핸들러 함수들 ---
     const handleLogout = () => {
@@ -116,7 +118,8 @@ const Header = () => {
     // 로그인 성공 후 처리 (모달 닫고 대시보드로 이동)
     const handleLoginSuccess = () => {
         closeLoginModal();      // AuthContext를 통해 모달을 닫습니다.
-        navigate('/dashboard'); // 대시보드로 페이지를 이동시킵니다.
+        //navigate('/dashboard'); // 대시보드로 페이지를 이동시킵니다.
+        window.location.reload();
     };
 
     const toggleLang = () => {
@@ -175,6 +178,9 @@ const Header = () => {
     };
 
     const isActive = (path) => location.pathname.startsWith(path);
+    if (isLoggedIn === null) {
+      return null; // 또는 로딩 스피너
+    }
 
     return (
         <Box borderBottom="1px solid" borderColor="gray.200" bg="white" px={4} py={2}>
@@ -229,6 +235,8 @@ const Header = () => {
                     <Button size="sm" variant="outline" color="gray.600" fontWeight="medium" onClick={toggleLang}>
                         {lang.toUpperCase()}
                     </Button>
+                    {isInitialized && ( 
+                        <>
                     
                     {/* 로그인 상태일 때만 알림 벨 표시 */}
                     {isLoggedIn && (
@@ -256,6 +264,8 @@ const Header = () => {
                                 )}
                             </MenuList>
                         </Menu>
+                    )}
+                    </>
                     )}
 
                     <Menu>
@@ -288,7 +298,7 @@ const Header = () => {
                 onClose={closeLoginModal} // AuthContext의 closeLoginModal 사용
                 onOpenSignup={signupModal.onOpen} 
                 onOpenForgot={forgotModal.onOpen} 
-                onLoginSuccess={handleLoginSuccess} // 로그인 성공 후 리다이렉트 처리
+                onLoginSuccess={handleLoginSuccess} 
             />
 
             <SignupModal isOpen={signupModal.isOpen} onClose={signupModal.onClose} onOpenLogin={openLoginModal} />
