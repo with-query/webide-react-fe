@@ -45,7 +45,7 @@ const FileNode = ({
       if (dragId === hoverId) return; // 자기 자신은 무시
 
       // 폴더가 아니면 드롭 불가
-      if (node.type !== "folder") return;
+      if (node.type !== "DIRECTORY") return;
 
       // 마우스 위치 계산
       const hoverBoundingRect = ref.current.getBoundingClientRect();
@@ -100,7 +100,7 @@ const FileNode = ({
     }
   };
 
-  if (node.type === "folder") {
+  if (node.type === "DIRECTORY") {
     return (
       <Box
         pl={10}

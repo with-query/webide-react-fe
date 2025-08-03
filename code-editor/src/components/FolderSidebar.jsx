@@ -11,7 +11,7 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
 
   const toggleOpen = (id, nodes = tree) => {
     return nodes.map((node) => {
-      if (node.id === id && node.type === "folder") {
+      if (node.id === id && node.type === "DIRECTORY") {
         return { ...node, isOpen: !node.isOpen };
       }
       if (node.children) {
@@ -23,7 +23,7 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
 
   const addChild = (parentId, name, nodes = tree) => {
     return nodes.map((node) => {
-      if (node.id === parentId && node.type === "folder") {
+      if (node.id === parentId && node.type === "DIRECTORY") {
         const isFile = name.includes(".");
         const isSql = name.toLowerCase().endsWith('.sql');
         const id = `new-${Date.now()}`;
@@ -32,14 +32,14 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
           ? {
               id,
               name,
-              type: "file",
+              type: "FILE",
               language: isSql ? 'sql' : 'javascript', 
               content: isSql ? CODE_SNIPPETS.sql : '', 
             }
           : {
               id,
               name,
-              type: "folder",
+              type: "DIRECTORY",
               isOpen: true,
               children: [],
             };
@@ -103,7 +103,7 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
     let inserted = false;
     const insertSource = (currentNodes) =>
       currentNodes.map((node) => {
-        if (node.id === targetId && node.type === "folder") {
+        if (node.id === targetId && node.type === "DIRECTORY") {
           inserted = true;
           return { ...node, children: [...(node.children || []), sourceNode] };
         }

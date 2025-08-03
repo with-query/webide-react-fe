@@ -22,14 +22,11 @@ import { useState, useEffect } from "react";
 import axios from "axios"; // axios 임포트
 import { useNavigate } from "react-router-dom"; // useNavigate 임포트
 
-// 모달 컴포넌트 가져오기 (경로가 정확한지 다시 한번 확인하세요)
 import CreateProjectModal from "../components/modals/CreateProjectModal";
 import EditDBConnectionModal from "../components/modals/EditDBConnectionModal";
 
-// 목업 데이터는 더 이상 필요 없으므로 제거합니다.
-// import { mockProjects, mockDbConnections } from '../mock/mockData';
 
-const BASE_URL = "http://20.196.89.99:8080"; // API BASE_URL 정의
+const BASE_URL = "http://20.196.89.99:8080"; 
 
 const DBConnect = () => {
   const [projects, setProjects] = useState([]);
