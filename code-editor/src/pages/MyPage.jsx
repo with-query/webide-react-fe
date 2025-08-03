@@ -47,7 +47,7 @@ export default function MyPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("ACCESS_TOKEN_KEY");
   const BASE_URL = "http://20.196.89.99:8080"; 
 
   const [receivedInvitations, setReceivedInvitations] = useState([]);
