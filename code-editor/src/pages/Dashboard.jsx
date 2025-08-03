@@ -23,11 +23,10 @@ import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
 import InviteMemberModal from "@/components/modals/InviteMemberModal";
 import { useTranslation } from "react-i18next";
 import RecentProjectsModal from "@/components/modals/RecentProjectsModal";
-import { ACCESS_TOKEN_KEY } from '../contexts/AuthContext';
 
 const Dashboard = () => {
+    const { user } = useAuth(); // AuthContext의 user만 사용
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
     const [projects, setProjects] = useState([]);
     const [dbConnections, setDbConnections] = useState([]);
 
@@ -69,15 +68,14 @@ const Dashboard = () => {
 
             setLoading(true);
             // ✅ 모든 토큰 조회를 일관된 키로 변경합니다.
-            const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const token = localStorage.getItem('token');
             try {
-                const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
-                    axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
+                const [projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/projects`, { headers: { Authorization: `Bearer ${token}` } }),
                     axios.get(`${BASE_URL}/api/db-connections`, { headers: { Authorization: `Bearer ${token}` } }),
                 ]);
 
-                setUser(userRes.data);
+                //setUser(userRes.data);
                 setProjects(projectsRes.data);
                 setDbConnections(dbConnectionsRes.data);
 
@@ -200,7 +198,11 @@ const Dashboard = () => {
                     username: data.dbConfig.user || data.dbConfig.username,
                     password: data.dbConfig.password,
                     driverClassName: '',
+                    createdById: user?.id
                 };
+
+                console.log("최종 전송 데이터:", dbConnectionPayload); 
+                console.log("사용자 객체:", user);
 
                 switch (data.dbType) {
                     case 'mysql':
@@ -303,12 +305,31 @@ const Dashboard = () => {
         }
 
         try {
-            await axios.delete(`${BASE_URL}/api/projects/${deleteTargetProject.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setProjects(projects.filter((p) => p.id !== deleteTargetProject.id));
-            setDbConnections((prev) => prev.filter((conn) => conn.projectId !== deleteTargetProject.id));
-            toast({ title: "프로젝트 삭제 완료", status: "success" });
+        // 1. 삭제할 프로젝트에 연결된 DB 커넥션을 찾습니다.
+        const connectionToDelete = dbConnections.find(
+            (conn) => conn.projectId === deleteTargetProject.id
+        );
+        
+        // 2. 만약 연결된 DB가 있다면, 그것부터 삭제합니다.
+        if (connectionToDelete) {
+            await axios.delete(
+                `${BASE_URL}/api/db-connections/${connectionToDelete.id}`, 
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+        }
+
+        // 3. 그리고 나서 프로젝트를 삭제합니다.
+        await axios.delete(
+            `${BASE_URL}/api/projects/${deleteTargetProject.id}`, 
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setProjects(projects.filter((p) => p.id !== deleteTargetProject.id));
+        if (connectionToDelete) {
+             setDbConnections(dbConnections.filter((conn) => conn.id !== connectionToDelete.id));
+        }
+        toast({ title: "프로젝트 삭제 완료", status: "success" });
+
         } catch (error) {
             console.error("프로젝트 삭제 실패:", error);
             toast({

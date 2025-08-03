@@ -224,7 +224,7 @@ const CreateProjectModal = ({
     try {
       // fetch 대신 axios 사용 (Dashboard와 일관성 유지)
       const response = await axios.post(
-        `${BASE_URL_FOR_TEST}/api/db-connections/test`,
+        `${BASE_URL_FOR_TEST}/api/db-connections/test/direct`,
         payloadForTest,
         {
           headers: {
