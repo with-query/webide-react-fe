@@ -23,7 +23,6 @@ import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
 import InviteMemberModal from "@/components/modals/InviteMemberModal";
 import { useTranslation } from "react-i18next";
 import RecentProjectsModal from "@/components/modals/RecentProjectsModal";
-import { ACCESS_TOKEN_KEY } from '../contexts/AuthContext';
 
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
@@ -69,7 +68,7 @@ const Dashboard = () => {
 
             setLoading(true);
             // ✅ 모든 토큰 조회를 일관된 키로 변경합니다.
-            const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const token = localStorage.getItem('token');
             try {
                 const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -84,7 +83,7 @@ const Dashboard = () => {
             } catch (error) {
                 console.error("대시보드 데이터 로딩 실패:", error);
                 if (error.response?.status === 401 || error.response?.status === 403) {
-                    localStorage.removeItem("ACCESS_TOKEN_KEY");
+                    localStorage.removeItem("token");
                     //window.location.reload();
                 }
             } finally {
@@ -99,7 +98,7 @@ const Dashboard = () => {
         const calculateUsageStatus = async () => {
             setProjectCount(projects.length);
 
-            const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // ✅ 키 변경
+            const token = localStorage.getItem("token"); // ✅ 키 변경
             if (!token) {
                 setTableItemCount(0);
                 setQueryCount(0);
@@ -173,7 +172,7 @@ const Dashboard = () => {
     }, [activeDropdownId]);
 
     const handleCreateProject = async (data) => {
-        const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // ✅ 키 변경
+        const token = localStorage.getItem("token"); // ✅ 키 변경
         if (!token) {
             toast({ title: "로그인이 필요합니다.", status: "warning" });
             navigate("/login");
@@ -240,7 +239,7 @@ const Dashboard = () => {
     };
 
     const handleSaveProject = async (updatedData) => {
-        const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // ✅ 키 변경
+        const token = localStorage.getItem("token"); // ✅ 키 변경
         if (!token || !editTargetProject) {
             toast({ title: "수정할 프로젝트를 찾을 수 없습니다.", status: "error" });
             return;
@@ -296,7 +295,7 @@ const Dashboard = () => {
     };
 
     const handleConfirmDelete = async () => {
-        const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // ✅ 키 변경
+        const token = localStorage.getItem("token"); // ✅ 키 변경
         if (!token || !deleteTargetProject) {
             toast({ title: "삭제할 프로젝트를 찾을 수 없습니다.", status: "error" });
             return;
@@ -363,7 +362,7 @@ const Dashboard = () => {
     };
 
     const handleAddDbConnection = async (dbConfigData) => {
-        const token = localStorage.getItem("ACCESS_TOKEN_KEY"); // ✅ 키 변경
+        const token = localStorage.getItem("token"); // ✅ 키 변경
         if (!token) {
             openLoginModal();
             return;

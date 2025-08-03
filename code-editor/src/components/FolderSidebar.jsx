@@ -143,7 +143,7 @@ const FolderSidebar = ({ tree, setTree, onSelectFile, activeFileId }) => {
         borderColor="gray.200"
       >
         <VStack align="start" spacing={1}>
-          {tree.map((node) => (
+          {Array.isArray(tree) && tree.map((node) =>(
             <FileNode
               key={node.id}
               node={node}

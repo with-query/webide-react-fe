@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const ACCESS_TOKEN_KEY = "token";
+const token = "token";
 const ACCESS_TOKEN_EXPIRY_KEY = "tokenExpiry"; // 액세스 토큰 만료 시간을 저장할 키
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30분 (밀리초)
 
@@ -33,11 +33,11 @@ const handleActivity = () => {
 };
 
 const useAuth = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem(ACCESS_TOKEN_KEY));
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
 
   // 로그아웃 처리 함수
   const logout = useCallback(() => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(token);
     localStorage.removeItem(ACCESS_TOKEN_EXPIRY_KEY);
     localStorage.removeItem("nickname"); // 저장된 닉네임도 삭제
     localStorage.removeItem("savedEmail"); // 저장된 이메일도 삭제 (선택 사항)
@@ -50,7 +50,7 @@ const useAuth = () => {
   const login = useCallback((token, nickname, expiresInSeconds) => {
     const now = Date.now();
     const expiryTime = now + (expiresInSeconds * 1000); // 밀리초 단위로 변환
-    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    localStorage.setItem(token, token);
     localStorage.setItem(ACCESS_TOKEN_EXPIRY_KEY, expiryTime.toString());
     localStorage.setItem("nickname", nickname);
     setIsLoggedIn(true);
@@ -64,7 +64,7 @@ const useAuth = () => {
 
   // 컴포넌트 마운트 시 또는 로그인 상태 변경 시 실행되는 useEffect
   useEffect(() => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const token = localStorage.getItem('token');
     const tokenExpiry = localStorage.getItem(ACCESS_TOKEN_EXPIRY_KEY);
 
     if (token && tokenExpiry) {
