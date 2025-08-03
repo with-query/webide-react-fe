@@ -132,7 +132,7 @@ export default function MyPage() {
       setUser((prev) => ({ ...prev, nickname }));
       // API 명세에 따라 닉네임 변경 시 새로운 토큰이 반환되므로 업데이트
       if (data.token) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("ACCESS_TOKEN_KEY", data.token);
       }
     } catch (err) {
       toast({
@@ -200,7 +200,7 @@ export default function MyPage() {
 
       if (!res.ok) throw new Error(data.message || "회원 탈퇴 실패");
 
-      localStorage.removeItem("token");
+      localStorage.removeItem("ACCESS_TOKEN_KEY");
       localStorage.removeItem("nickname"); // 닉네임도 함께 제거
       setUser(null);
       setNickname("");

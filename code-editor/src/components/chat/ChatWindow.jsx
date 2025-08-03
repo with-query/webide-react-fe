@@ -202,7 +202,7 @@ const ChatWindow = ({ selectedRoom, onBack, onLeaveRoom }) => {
         return;
       }
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('ACCESS_TOKEN_KEY');
       if (!token) {
         toast({
           title: "인증 필요",

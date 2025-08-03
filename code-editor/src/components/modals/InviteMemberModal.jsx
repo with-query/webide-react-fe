@@ -12,7 +12,7 @@ const InviteMemberModal = ({ isOpen, onClose, project, onInvitationSent }) => {
   // 프로젝트 멤버를 불러오는 함수 (인증 토큰 포함)
   const fetchProjectMembers = async (projectId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('ACCESS_TOKEN_KEY');
       if (!token) {
         console.warn('인증 토큰이 없어 프로젝트 멤버를 가져올 수 없습니다.');
         return;
@@ -68,7 +68,7 @@ const InviteMemberModal = ({ isOpen, onClose, project, onInvitationSent }) => {
     console.log(`'${project.name}' 프로젝트에 '${email}' 초대 전송 시도`);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('ACCESS_TOKEN_KEY');
       if (!token) {
         alert('로그인이 필요합니다.');
         return;

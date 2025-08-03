@@ -95,7 +95,7 @@ const DBConnect = () => {
       });
 
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem("token");
+        localStorage.removeItem("ACCESS_TOKEN_KEY");
         navigate("/login");
       }
     } finally {
