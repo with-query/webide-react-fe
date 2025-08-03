@@ -3,7 +3,7 @@ import { useDisclosure } from '@chakra-ui/react';
 
 // ✅ 1. 일관된 키 사용을 위해 상수로 정의
 
-const ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY";
+export const ACCESS_TOKEN_KEY = "token";
 const NICKNAME_KEY = "nickname";
 
 const AuthContext = createContext(null);
