@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 
 // ✅ 1. 앱 전체에서 사용할 토큰 키를 'token'으로 명확하게 정의합니다.
-const TOKEN_KEY = "token";
+export const ACCESS_TOKEN_KEY = "token";
 const NICKNAME_KEY = "nickname";
 
 const AuthContext = createContext(null);

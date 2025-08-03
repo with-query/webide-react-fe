@@ -23,6 +23,7 @@ import DeleteProjectModal from "@/components/modals/DeleteProjectModal";
 import InviteMemberModal from "@/components/modals/InviteMemberModal";
 import { useTranslation } from "react-i18next";
 import RecentProjectsModal from "@/components/modals/RecentProjectsModal";
+import { ACCESS_TOKEN_KEY } from '../contexts/AuthContext';
 
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
@@ -68,7 +69,7 @@ const Dashboard = () => {
 
             setLoading(true);
             // ✅ 모든 토큰 조회를 일관된 키로 변경합니다.
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem(ACCESS_TOKEN_KEY);
             try {
                 const [userRes, projectsRes, dbConnectionsRes] = await Promise.all([
                     axios.get(`${BASE_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
