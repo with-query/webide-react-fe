@@ -27,7 +27,7 @@ const backendApi = axios.create({
 
 // API 요청 시 토큰을 헤더에 포함시키는 인터셉터
 backendApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); 
+  const token = localStorage.getItem("ACCESS_TOKEN_KEY"); 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
