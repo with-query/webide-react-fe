@@ -11,11 +11,23 @@ const WhereClauseBuilder = ({ nodes, clauses, setClauses }) => {
 
   const operators = ['=', '!=', '>', '<', '>=', '<=', 'LIKE', 'IN', 'IS NULL', 'IS NOT NULL'];
 
-  const handleClauseChange = (index, field, value) => {
-    const newClauses = [...clauses];
-    newClauses[index][field] = value;
-    setClauses(newClauses);
-  };
+  const handleAddWhereClause = (node, column) => {
+    const newClause = {
+        // 👇 '테이블별칭.컬럼명' 또는 '테이블명.컬럼명' 형태로 저장
+        column: `${node.data.alias || node.data.tableName}.${column.name}`, 
+        operator: '=',
+        value: '',
+        connector: 'AND'
+    };
+
+    setWhereClauses(prev => [...prev, newClause]);
+};
+  
+  // const handleClauseChange = (index, field, value) => {
+  //   const newClauses = [...clauses];
+  //   newClauses[index][field] = value;
+  //   setClauses(newClauses);
+  // };
 
   const addClause = () => {
     setClauses([...clauses, { id: Date.now(), column: '', operator: '=', value: '', connector: 'AND' }]);
